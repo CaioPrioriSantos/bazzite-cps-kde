@@ -1,6 +1,5 @@
 ---
 name: Build disk images
-
 on:
   workflow_dispatch:
     inputs:
@@ -22,30 +21,26 @@ on:
       - './disk_config/disk.toml'
       - './disk_config/iso.toml'
       - './.github/workflows/build-disk.yml'
-
 env:
   IMAGE_NAME: ${{ github.event.repository.name }}
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
   DEFAULT_TAG: "latest"
   BIB_IMAGE: "quay.io/centos-bootc/bootc-image-builder:latest"
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
-
 jobs:
   build:
-    name: Build disk images
+    name: Build disk images (${{ matrix.disk-type }})
     runs-on: ${{ inputs.platform == 'amd64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     strategy:
       fail-fast: false
       matrix:
-        disk-type: ["anaconda-iso"]
+        disk-type: ["anaconda-iso", "qcow2"]
     permissions:
       contents: read
       packages: read
       id-token: write
-
     steps:
       - name: Prepare environment
         run: |
@@ -87,10 +82,10 @@ jobs:
         uses: osbuild/bootc-image-builder-action@main
         with:
           builder-image: ${{ env.BIB_IMAGE }}
-          config-file: ./disk_config/iso.toml
+          config-file: ${{ matrix.disk-type == 'qcow2' && './disk_config/disk.toml' || './disk_config/iso.toml' }}
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
-          types: anaconda-iso
+          types: ${{ matrix.disk-type }}
           additional-args: --use-librepo=True --rootfs=btrfs
 
       - name: Upload disk images and Checksum to Job Artifacts
