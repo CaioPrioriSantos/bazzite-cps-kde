@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        disk-type: ["anaconda-iso", "qcow2"]
+        disk-type: ["anaconda-iso"]
     permissions:
       contents: read
       packages: read
@@ -88,10 +88,10 @@ jobs:
         uses: osbuild/bootc-image-builder-action@main
         with:
           builder-image: ${{ env.BIB_IMAGE }}
-          config-file: ${{ matrix.disk-type == 'qcow2' && './disk_config/disk.toml' || './disk_config/iso.toml' }}
+          config-file: ./disk_config/iso.toml
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
-          types: ${{ matrix.disk-type }}
+          types: anaconda-iso
           additional-args: --use-librepo=True --rootfs=btrfs
 
       - name: Upload disk images and Checksum to Job Artifacts
