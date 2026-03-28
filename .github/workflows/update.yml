@@ -1,0 +1,47 @@
+---
+name: Check for upstream updates
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check upstream digest
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Install skopeo
+        run: |
+          sudo apt-get install -y skopeo
+
+      - name: Get upstream digest
+        id: upstream
+        run: |
+          DIGEST=$(skopeo inspect --format '{{.Digest}}' \
+            docker://ghcr.io/ublue-os/bazzite:stable 2>/dev/null || echo "error")
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+
+      - name: Get current digest
+        id: current
+        run: |
+          DIGEST=$(cat .upstream-digest 2>/dev/null || echo "none")
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+
+      - name: Update digest and trigger rebuild
+        if: steps.upstream.outputs.digest != steps.current.outputs.digest && steps.upstream.outputs.digest != 'error'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "${{ steps.upstream.outputs.digest }}" > .upstream-digest
+          git add .upstream-digest
+          git commit -m "chore: upstream updated to ${{ steps.upstream.outputs.digest }}"
+          git push
+
+      - name: No update needed
+        if: steps.upstream.outputs.digest == steps.current.outputs.digest
+        run: echo "Upstream não mudou, nenhum rebuild necessário."
