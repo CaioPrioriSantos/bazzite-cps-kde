@@ -126,3 +126,51 @@ cat > /etc/systemd/system.conf.d/99-bazzite-cps-timeouts.conf << 'SYSTEMD'
 DefaultTimeoutStartSec=15s
 DefaultTimeoutStopSec=10s
 SYSTEMD
+
+# ------------------------------------------------------------------------------
+# DX — Developer Experience
+# ------------------------------------------------------------------------------
+
+# VS Code — repositório Microsoft
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+cat > /etc/yum.repos.d/vscode.repo << 'REPO'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+REPO
+dnf5 install -y code
+
+# Docker CE — repositório oficial Docker
+dnf5 config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+dnf5 install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+systemctl enable docker.socket
+
+# Shells
+dnf5 install -y fish zsh
+
+# distrobox + flatpak-builder
+dnf5 install -y distrobox flatpak-builder
+
+# Ferramentas de performance (toolkit Brendan Gregg / Bluefin DX)
+dnf5 install -y \
+    perf \
+    bpftrace \
+    sysprof \
+    strace \
+    ltrace \
+    lsof \
+    sysstat \
+    pcp \
+    flamegraph
+
+# Limpeza repos temporários
+rm -f /etc/yum.repos.d/vscode.repo
+dnf5 config-manager setopt docker-ce-stable.enabled=0
