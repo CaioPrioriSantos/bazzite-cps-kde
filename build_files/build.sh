@@ -220,13 +220,26 @@ dnf5 install -y \
     nethogs \
     hyperfine
 
-# JetBrains Toolbox — instala binário em /usr/local/bin
-JETBRAINS_API="https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release"
-JETBRAINS_URL=$(curl -s "$JETBRAINS_API" | python3 -c "import sys,json; print(json.load(sys.stdin)['TBA'][0]['downloads']['linux']['link'])")
-curl -L "$JETBRAINS_URL" | tar -xz -C /tmp
-find /tmp -maxdepth 2 -name jetbrains-toolbox -type f -exec mv {} /usr/local/bin/jetbrains-toolbox \;
-chmod +x /usr/local/bin/jetbrains-toolbox
-rm -rf /tmp/jetbrains-toolbox*
+
+# GitHub CLI
+dnf5 install -y gh
+
+# GParted — acesso direto a /dev, melhor fora de sandbox
+dnf5 install -y gparted
+
+# Ardour + suite completa de plugins (LV2, LADSPA, VST via Carla)
+dnf5 install -y \
+    ardour \
+    calf \
+    swh-plugins \
+    mda-lv2 \
+    x42-plugins \
+    gxplugins-lv2 \
+    guitarix \
+    a2jmidid \
+    carla \
+    zynaddsubfx \
+    ladspa
 
 # Firefox oficial Mozilla — en-US em /opt/firefox
 curl -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" | tar -xj -C /opt
@@ -243,3 +256,44 @@ Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;x-scheme-handler/http;x-scheme-handler/https;
 StartupNotify=true
 DESKTOP
+
+# ------------------------------------------------------------------------------
+# Flatpaks — instalacao no primeiro boot via systemd oneshot
+# ------------------------------------------------------------------------------
+mkdir -p /usr/share/bazzite-cps
+
+cat > /usr/share/bazzite-cps/flatpaks.list << 'FLATPAKEOF'
+org.libreoffice.LibreOffice
+org.gimp.GIMP
+org.inkscape.Inkscape
+org.kde.kdenlive
+org.shotcut.Shotcut
+fr.handbrake.ghb
+com.obsproject.Studio
+org.audacityteam.Audacity
+org.musescore.MuseScore
+org.videolan.VLC
+com.stremio.Stremio
+com.transmissionbt.Transmission
+com.jetbrains.PyCharm-Community
+com.vysp3r.ProtonPlus
+FLATPAKEOF
+
+cat > /usr/lib/systemd/system/bazzite-cps-flatpaks.service << 'SVCEOF'
+[Unit]
+Description=bazzite-cps — instalar Flatpaks no primeiro boot
+After=network-online.target flatpak-system-helper.service
+Wants=network-online.target
+ConditionPathExists=!/var/lib/bazzite-cps/.flatpaks-installed
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && xargs flatpak install --system --noninteractive flathub < /usr/share/bazzite-cps/flatpaks.list && touch /var/lib/bazzite-cps/.flatpaks-installed'
+
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+
+systemctl enable bazzite-cps-flatpaks.service
+
