@@ -26,7 +26,7 @@ systemctl enable supergfxd.service
 
 # CachyOS addons runtime
 dnf5 copr enable -y bieszczaders/kernel-cachyos-addons
-dnf5 install -y cachyos-settings scx-scheds
+# scx-scheds já vem no Bazzite; cachyos-settings conflitua com zram-generator-defaults
 
 systemctl enable scx.service
 echo 'SCX_SCHEDULER=scx_lavd' > /etc/default/scx
