@@ -227,20 +227,6 @@ dnf5 install -y gh
 # GParted — acesso direto a /dev, melhor fora de sandbox
 dnf5 install -y gparted
 
-# Ardour + suite completa de plugins (LV2, LADSPA, VST via Carla)
-dnf5 install -y \
-    ardour \
-    calf \
-    swh-plugins \
-    mda-lv2 \
-    x42-plugins \
-    gxplugins-lv2 \
-    guitarix \
-    a2jmidid \
-    carla \
-    zynaddsubfx \
-    ladspa
-
 # Firefox oficial Mozilla — en-US em /opt/firefox
 curl -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" | tar -xj -C /opt
 ln -sf /opt/firefox/firefox /usr/local/bin/firefox
@@ -277,6 +263,7 @@ com.stremio.Stremio
 com.transmissionbt.Transmission
 com.jetbrains.PyCharm-Community
 com.vysp3r.ProtonPlus
+org.ardour.Ardour
 FLATPAKEOF
 
 cat > /usr/lib/systemd/system/bazzite-cps-flatpaks.service << 'SVCEOF'
