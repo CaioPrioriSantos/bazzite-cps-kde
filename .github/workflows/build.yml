@@ -19,7 +19,7 @@ on:
 
 env:
   IMAGE_NAME: bazzite-cps-kde
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_REGISTRY: ghcr.io/caiopriorisantos
 
 jobs:
   build-and-push:
