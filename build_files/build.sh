@@ -174,3 +174,41 @@ dnf5 install -y \
 # Limpeza repos temporários
 rm -f /etc/yum.repos.d/vscode.repo
 dnf5 config-manager setopt docker-ce-stable.enabled=0
+
+# ------------------------------------------------------------------------------
+# DX — Pacotes adicionais (bazzite-dx oficial)
+# ------------------------------------------------------------------------------
+
+# Performance adicional
+dnf5 install -y \
+    bcc \
+    bpftop \
+    tiptop \
+    nicstat \
+    numactl
+
+# Mobile dev
+dnf5 install -y \
+    android-tools \
+    usbmuxd
+
+# Containers
+dnf5 install -y \
+    podman-machine \
+    podman-tui
+
+# Cache de compilação
+dnf5 install -y \
+    ccache \
+    sccache
+
+# Backup e sync cloud
+dnf5 install -y \
+    rclone \
+    restic
+
+# LLMs locais
+dnf5 install -y python3-ramalama
+
+# Docker — módulo iptable_nat para docker-in-docker
+echo 'iptable_nat' > /usr/lib/modules-load.d/iptable_nat.conf
