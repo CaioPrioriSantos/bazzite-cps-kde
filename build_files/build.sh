@@ -212,3 +212,34 @@ dnf5 install -y python3-ramalama
 
 # Docker — módulo iptable_nat para docker-in-docker
 echo 'iptable_nat' > /usr/lib/modules-load.d/iptable_nat.conf
+
+# Performance — ferramentas adicionais
+dnf5 install -y \
+    turbostat \
+    valgrind \
+    nethogs \
+    hyperfine
+
+# JetBrains Toolbox — instala binário em /usr/local/bin
+JETBRAINS_API="https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release"
+JETBRAINS_URL=$(curl -s "$JETBRAINS_API" | python3 -c "import sys,json; print(json.load(sys.stdin)['TBA'][0]['downloads']['linux']['link'])")
+curl -L "$JETBRAINS_URL" | tar -xz -C /tmp
+mv /tmp/jetbrains-toolbox*/jetbrains-toolbox /usr/local/bin/jetbrains-toolbox
+chmod +x /usr/local/bin/jetbrains-toolbox
+rm -rf /tmp/jetbrains-toolbox*
+
+# Firefox oficial Mozilla — en-US em /opt/firefox
+curl -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" | tar -xj -C /opt
+ln -sf /opt/firefox/firefox /usr/local/bin/firefox
+cat > /usr/share/applications/firefox-mozilla.desktop << 'DESKTOP'
+[Desktop Entry]
+Name=Firefox
+Comment=Browse the Web
+Exec=/opt/firefox/firefox %u
+Icon=/opt/firefox/browser/chrome/icons/default/default128.png
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true
+DESKTOP
