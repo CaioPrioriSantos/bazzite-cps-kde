@@ -93,7 +93,7 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
         | grep -E '^kernel(-core|-modules|-modules-core|-modules-extra|-modules-internal|-uki-virt)?$' \
         | sort -u)
 
-    dnf5 install -y \
+    dnf5 install -y --setopt=tsflags=noscripts \
         kernel-cachyos-lto \
         kernel-cachyos-lto-devel-matched
 
