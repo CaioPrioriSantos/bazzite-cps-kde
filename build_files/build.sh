@@ -227,22 +227,6 @@ dnf5 install -y gh
 # GParted — acesso direto a /dev, melhor fora de sandbox
 dnf5 install -y gparted
 
-# Firefox oficial Mozilla — en-US em /opt/firefox
-curl -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" | tar -xj -C /opt
-ln -sf /opt/firefox/firefox /usr/local/bin/firefox
-cat > /usr/share/applications/firefox-mozilla.desktop << 'DESKTOP'
-[Desktop Entry]
-Name=Firefox
-Comment=Browse the Web
-Exec=/opt/firefox/firefox %u
-Icon=/opt/firefox/browser/chrome/icons/default/default128.png
-Terminal=false
-Type=Application
-Categories=Network;WebBrowser;
-MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;x-scheme-handler/http;x-scheme-handler/https;
-StartupNotify=true
-DESKTOP
-
 # ------------------------------------------------------------------------------
 # Flatpaks — instalacao no primeiro boot via systemd oneshot
 # ------------------------------------------------------------------------------
