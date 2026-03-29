@@ -28,7 +28,7 @@ systemctl enable supergfxd.service
 dnf5 copr enable -y bieszczaders/kernel-cachyos-addons
 # scx-scheds já vem no Bazzite; cachyos-settings conflitua com zram-generator-defaults
 
-systemctl enable scx.service
+systemctl enable scx.service 2>/dev/null || true
 echo 'SCX_SCHEDULER=scx_lavd' > /etc/default/scx
 
 # ------------------------------------------------------------------------------
@@ -106,3 +106,23 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
 else
     echo "kernel Bazzite mantido — melhorias CachyOS runtime aplicadas"
 fi
+
+# CPU DMA latency — acesso sem root para PipeWire/JACK
+cat > /usr/lib/udev/rules.d/99-bazzite-cps-dma-latency.rules << 'UDEV'
+KERNEL=="cpu_dma_latency", GROUP="audio", MODE="0660"
+UDEV
+
+# journald — limita logs a 50MB
+mkdir -p /etc/systemd/journald.conf.d
+cat > /etc/systemd/journald.conf.d/99-bazzite-cps.conf << 'JOURNALD'
+[Journal]
+SystemMaxUse=50M
+JOURNALD
+
+# Service timeouts — boot/shutdown mais rápido
+mkdir -p /etc/systemd/system.conf.d
+cat > /etc/systemd/system.conf.d/99-bazzite-cps-timeouts.conf << 'SYSTEMD'
+[Manager]
+DefaultTimeoutStartSec=15s
+DefaultTimeoutStopSec=10s
+SYSTEMD
