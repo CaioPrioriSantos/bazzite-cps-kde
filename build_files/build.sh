@@ -224,7 +224,7 @@ dnf5 install -y \
 JETBRAINS_API="https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release"
 JETBRAINS_URL=$(curl -s "$JETBRAINS_API" | python3 -c "import sys,json; print(json.load(sys.stdin)['TBA'][0]['downloads']['linux']['link'])")
 curl -L "$JETBRAINS_URL" | tar -xz -C /tmp
-mv /tmp/jetbrains-toolbox*/jetbrains-toolbox /usr/local/bin/jetbrains-toolbox
+mv /tmp/jetbrains-toolbox /usr/local/bin/jetbrains-toolbox
 chmod +x /usr/local/bin/jetbrains-toolbox
 rm -rf /tmp/jetbrains-toolbox*
 
