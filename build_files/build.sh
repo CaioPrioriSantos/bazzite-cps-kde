@@ -228,6 +228,41 @@ dnf5 install -y gh
 dnf5 install -y gparted
 
 # ------------------------------------------------------------------------------
+# Firefox Mozilla — instalação de sistema em /opt/firefox
+# ------------------------------------------------------------------------------
+tmpdir="$(mktemp -d)"
+
+FIREFOX_URL="$(curl -fsSLI -o /dev/null -w '%{url_effective}' 'https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US')"
+FIREFOX_ARCHIVE="$tmpdir/$(basename "${FIREFOX_URL%%\?*}")"
+curl -fsSL "$FIREFOX_URL" -o "$FIREFOX_ARCHIVE"
+
+rm -rf /opt/firefox
+
+case "$FIREFOX_ARCHIVE" in
+  *.tar.xz)  tar -xJf "$FIREFOX_ARCHIVE" -C /opt ;;
+  *.tar.bz2) tar -xjf "$FIREFOX_ARCHIVE" -C /opt ;;
+  *.tar.gz)  tar -xzf "$FIREFOX_ARCHIVE" -C /opt ;;
+  *) echo "Formato inesperado do Firefox: $FIREFOX_ARCHIVE"; exit 1 ;;
+esac
+
+ln -sf /opt/firefox/firefox /usr/local/bin/firefox
+
+cat > /usr/share/applications/firefox-mozilla.desktop << 'DESKTOP'
+[Desktop Entry]
+Name=Firefox
+Comment=Browse the Web
+Exec=/opt/firefox/firefox %u
+Icon=/opt/firefox/browser/chrome/icons/default/default128.png
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true
+DESKTOP
+
+rm -rf "$tmpdir"
+
+# ------------------------------------------------------------------------------
 # Flatpaks — instalacao no primeiro boot via systemd oneshot
 # ------------------------------------------------------------------------------
 mkdir -p /usr/share/bazzite-cps
@@ -248,6 +283,11 @@ com.transmissionbt.Transmission
 com.jetbrains.PyCharm-Community
 com.vysp3r.ProtonPlus
 org.ardour.Ardour
+org.mozilla.Thunderbird
+org.zotero.Zotero
+org.telegram.desktop
+com.spotify.Client
+ar.com.tuxguitar.TuxGuitar
 FLATPAKEOF
 
 cat > /usr/lib/systemd/system/bazzite-cps-flatpaks.service << 'SVCEOF'
