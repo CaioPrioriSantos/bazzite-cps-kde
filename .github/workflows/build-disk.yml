@@ -60,6 +60,8 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
           echo "USER_UID=${USER_UID}" >> ${GITHUB_ENV}
           echo "USER_GID=${USER_GID}" >> ${GITHUB_ENV}
+          echo "ISO_NAME=${IMAGE_NAME}" >> ${GITHUB_ENV}
+          echo "ISO_FILENAME=${IMAGE_NAME}.iso" >> ${GITHUB_ENV}
 
       - name: Install dependencies
         if: inputs.platform == 'arm64'
@@ -91,22 +93,38 @@ jobs:
         run: |
           sudo podman pull ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+      - name: Generate ISO config
+        run: |
+          cp ./disk_config/iso.toml ./disk_config/iso-generated.toml
+          cat >> ./disk_config/iso-generated.toml <<EOF
+
+[customizations.iso]
+volume_id = "${ISO_NAME}"
+application_id = "${ISO_NAME}"
+publisher = "CaioPrioriSantos"
+EOF
+
       - name: Build disk images
         id: build
         uses: osbuild/bootc-image-builder-action@main
         with:
           builder-image: ${{ env.BIB_IMAGE }}
-          config-file: ./disk_config/iso.toml
+          config-file: ./disk_config/iso-generated.toml
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
           types: anaconda-iso
           additional-args: --use-librepo=True --rootfs=btrfs
 
+      - name: Rename ISO file
+        run: |
+          ISO_PATH="$(find "${{ steps.build.outputs.output-directory }}" -type f -name 'install.iso' | head -n1)"
+          mv "$ISO_PATH" "$(dirname "$ISO_PATH")/${ISO_FILENAME}"
+
       - name: Upload disk images and checksum to job artifacts
         if: inputs.upload-to-s3 != true && github.event_name != 'pull_request'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: ${{ env.IMAGE_NAME }}-latest
+          name: ${{ env.ISO_FILENAME }}
           path: ${{ steps.build.outputs.output-directory }}
           if-no-files-found: error
           retention-days: 0
@@ -148,6 +166,8 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
           echo "USER_UID=${USER_UID}" >> ${GITHUB_ENV}
           echo "USER_GID=${USER_GID}" >> ${GITHUB_ENV}
+          echo "ISO_NAME=${IMAGE_NAME}-cachyos" >> ${GITHUB_ENV}
+          echo "ISO_FILENAME=${IMAGE_NAME}-cachyos.iso" >> ${GITHUB_ENV}
 
       - name: Install dependencies
         if: inputs.platform == 'arm64'
@@ -179,22 +199,38 @@ jobs:
         run: |
           sudo podman pull ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest-cachyos
 
+      - name: Generate ISO config
+        run: |
+          cp ./disk_config/iso.toml ./disk_config/iso-generated.toml
+          cat >> ./disk_config/iso-generated.toml <<EOF
+
+[customizations.iso]
+volume_id = "${ISO_NAME}"
+application_id = "${ISO_NAME}"
+publisher = "CaioPrioriSantos"
+EOF
+
       - name: Build disk images
         id: build
         uses: osbuild/bootc-image-builder-action@main
         with:
           builder-image: ${{ env.BIB_IMAGE }}
-          config-file: ./disk_config/iso.toml
+          config-file: ./disk_config/iso-generated.toml
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest-cachyos
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
           types: anaconda-iso
           additional-args: --use-librepo=True --rootfs=btrfs
 
+      - name: Rename ISO file
+        run: |
+          ISO_PATH="$(find "${{ steps.build.outputs.output-directory }}" -type f -name 'install.iso' | head -n1)"
+          mv "$ISO_PATH" "$(dirname "$ISO_PATH")/${ISO_FILENAME}"
+
       - name: Upload disk images and checksum to job artifacts
         if: inputs.upload-to-s3 != true && github.event_name != 'pull_request'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: ${{ env.IMAGE_NAME }}-latest-cachyos
+          name: ${{ env.ISO_FILENAME }}
           path: ${{ steps.build.outputs.output-directory }}
           if-no-files-found: error
           retention-days: 0
