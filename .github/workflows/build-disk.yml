@@ -96,13 +96,7 @@ jobs:
       - name: Generate ISO config
         run: |
           cp ./disk_config/iso.toml ./disk_config/iso-generated.toml
-          cat >> ./disk_config/iso-generated.toml <<EOF
-
-[customizations.iso]
-volume_id = "${ISO_NAME}"
-application_id = "${ISO_NAME}"
-publisher = "CaioPrioriSantos"
-EOF
+          printf '\n[customizations.iso]\nvolume_id = "%s"\napplication_id = "%s"\npublisher = "CaioPrioriSantos"\n' "$ISO_NAME" "$ISO_NAME" >> ./disk_config/iso-generated.toml
 
       - name: Build disk images
         id: build
@@ -202,13 +196,7 @@ EOF
       - name: Generate ISO config
         run: |
           cp ./disk_config/iso.toml ./disk_config/iso-generated.toml
-          cat >> ./disk_config/iso-generated.toml <<EOF
-
-[customizations.iso]
-volume_id = "${ISO_NAME}"
-application_id = "${ISO_NAME}"
-publisher = "CaioPrioriSantos"
-EOF
+          printf '\n[customizations.iso]\nvolume_id = "%s"\napplication_id = "%s"\npublisher = "CaioPrioriSantos"\n' "$ISO_NAME" "$ISO_NAME" >> ./disk_config/iso-generated.toml
 
       - name: Build disk images
         id: build
