@@ -14,6 +14,15 @@ on:
         options:
           - amd64
           - arm64
+      variant:
+        description: "Which ISO to build"
+        required: true
+        default: both
+        type: choice
+        options:
+          - bazzite
+          - cachyos
+          - both
   pull_request:
     branches:
       - main
@@ -21,26 +30,32 @@ on:
       - './disk_config/disk.toml'
       - './disk_config/iso.toml'
       - './.github/workflows/build-disk.yml'
+
 env:
   IMAGE_NAME: ${{ github.event.repository.name }}
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
-  DEFAULT_TAG: "latest"
   BIB_IMAGE: "quay.io/centos-bootc/bootc-image-builder:latest"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
+
 jobs:
   build:
-    name: Build disk images (${{ matrix.disk-type }})
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.variant == 'both' || (inputs.variant == 'bazzite' && matrix.image-tag == 'latest') || (inputs.variant == 'cachyos' && matrix.image-tag == 'latest-cachyos') }}
+    name: Build disk images (${{ matrix.image-tag }})
     runs-on: ${{ inputs.platform == 'amd64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     strategy:
       fail-fast: false
       matrix:
+        image-tag: ["latest", "latest-cachyos"]
         disk-type: ["anaconda-iso"]
+
     permissions:
       contents: read
       packages: read
       id-token: write
+
     steps:
       - name: Prepare environment
         run: |
@@ -81,7 +96,7 @@ jobs:
 
       - name: Pull base image
         run: |
-          sudo podman pull ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+          sudo podman pull ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.image-tag }}
 
       - name: Build disk images
         id: build
@@ -89,15 +104,16 @@ jobs:
         with:
           builder-image: ${{ env.BIB_IMAGE }}
           config-file: ./disk_config/iso.toml
-          image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+          image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.image-tag }}
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
           types: anaconda-iso
           additional-args: --use-librepo=True --rootfs=btrfs
 
-      - name: Upload disk images and Checksum to Job Artifacts
+      - name: Upload disk images and checksum to job artifacts
         if: inputs.upload-to-s3 != true && github.event_name != 'pull_request'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
+          name: ${{ env.IMAGE_NAME }}-${{ matrix.image-tag }}
           path: ${{ steps.build.outputs.output-directory }}
           if-no-files-found: error
           retention-days: 0
@@ -118,4 +134,4 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y rclone
-          rclone copy $SOURCE_DIR S3:${{ secrets.S3_BUCKET_NAME }}
+          rclone copy "$SOURCE_DIR" "S3:${{ secrets.S3_BUCKET_NAME }}/${{ env.IMAGE_NAME }}/${{ matrix.image-tag }}"
