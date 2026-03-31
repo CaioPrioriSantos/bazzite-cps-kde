@@ -281,7 +281,6 @@ org.musescore.MuseScore
 org.videolan.VLC
 com.stremio.Stremio
 com.transmissionbt.Transmission
-com.jetbrains.PyCharm-Community
 com.vysp3r.ProtonPlus
 org.ardour.Ardour
 org.mozilla.Thunderbird
@@ -289,6 +288,8 @@ org.zotero.Zotero
 org.telegram.desktop
 com.spotify.Client
 ar.com.tuxguitar.TuxGuitar
+org.fedoraproject.MediaWriter
+io.missioncenter.MissionCenter
 FLATPAKEOF
 
 cat > /usr/lib/systemd/system/bazzite-cps-flatpaks.service << 'SVCEOF'
@@ -309,3 +310,8 @@ SVCEOF
 
 systemctl enable bazzite-cps-flatpaks.service
 
+
+# Corrigir bbr → cubic (bbr falha no boot em composefs)
+if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
+  sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
+fi
