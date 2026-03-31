@@ -301,6 +301,8 @@ ConditionPathExists=!/var/lib/bazzite-cps/.flatpaks-installed
 
 [Service]
 Type=oneshot
+Restart=on-failure
+RestartSec=30
 RemainAfterExit=yes
 ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && xargs flatpak install --system --noninteractive flathub < /usr/share/bazzite-cps/flatpaks.list && touch /var/lib/bazzite-cps/.flatpaks-installed'
 
