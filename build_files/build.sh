@@ -93,7 +93,7 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
         | grep -E '^kernel(-core|-modules|-modules-core|-modules-extra|-modules-internal|-uki-virt)?$' \
         | sort -u)
 
-    dnf5 install -y --setopt=tsflags=noscripts \
+    dnf5 install -y \
         kernel-cachyos-lto \
         kernel-cachyos-lto-devel-matched
 
@@ -101,6 +101,8 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
         echo "${BAZZITE_KERNEL_PKGS}" | xargs dnf5 remove -y
     fi
 
+    CACHY_VER="$(rpm -q kernel-cachyos-lto --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
+    dracut -vf "/usr/lib/modules/${CACHY_VER}/initramfs.img" "${CACHY_VER}"
     echo "kernel-cachyos-lto instalado com sucesso"
 
 else
