@@ -150,10 +150,6 @@ KSMD
     export DRACUT_NO_XATTR=1
     /usr/bin/dracut --no-hostonly --kver "${CACHY_VER}" --reproducible -v --add ostree -f "/lib/modules/${CACHY_VER}/initramfs.img"
     chmod 0600 "/lib/modules/${CACHY_VER}/initramfs.img"
-    # KWin better blur
-    dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
-    dnf5 install -y kwin-effects-better-blur-dx
-
     echo "kernel-cachyos-lto instalado com sucesso"
 
 else
@@ -378,6 +374,10 @@ dnf5 install -y \
     yoshimi \
     ladspa-tap-plugins \
     ladspa-fil-plugins
+
+# KWin better blur
+dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
+dnf5 install -y kwin-effects-better-blur-dx
 
 # Limpeza cache DNF — reduz tamanho da imagem
 dnf5 clean all
