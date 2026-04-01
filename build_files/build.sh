@@ -87,23 +87,42 @@ UDEV
 # ------------------------------------------------------------------------------
 if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
 
+    # Desactiva scriptlets de kernel durante o install
+    cd /usr/lib/kernel/install.d \
+        && mv 05-rpmostree.install 05-rpmostree.install.bak \
+        && mv 50-dracut.install 50-dracut.install.bak \
+        && printf '%s\n' '#!/bin/sh' 'exit 0' > 05-rpmostree.install \
+        && printf '%s\n' '#!/bin/sh' 'exit 0' > 50-dracut.install \
+        && chmod +x 05-rpmostree.install 50-dracut.install
+
     dnf5 copr enable -y bieszczaders/kernel-cachyos-lto
 
     BAZZITE_KERNEL_PKGS=$(rpm -qa --queryformat '%{NAME}\n' \
         | grep -E '^kernel(-core|-modules|-modules-core|-modules-extra|-modules-internal|-uki-virt)?$' \
         | sort -u)
 
-    dnf5 install -y --setopt=tsflags=noscripts \
-        kernel-cachyos-lto \
-        kernel-cachyos-lto-devel-matched
+    dnf5 remove -y kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra || true
+    rm -rf /lib/modules/*
+
+    dnf5 install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched --allowerasing
 
     if [[ -n "${BAZZITE_KERNEL_PKGS}" ]]; then
-        echo "${BAZZITE_KERNEL_PKGS}" | xargs dnf5 remove -y
+        echo "${BAZZITE_KERNEL_PKGS}" | xargs dnf5 remove -y || true
     fi
 
-    CACHY_VER="$(rpm -q kernel-cachyos-lto --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
-    depmod "${CACHY_VER}"
-    dracut -vf "/usr/lib/modules/${CACHY_VER}/initramfs.img" "${CACHY_VER}"
+    # Restaura scriptlets
+    mv -f 05-rpmostree.install.bak 05-rpmostree.install \
+        && mv -f 50-dracut.install.bak 50-dracut.install
+    cd -
+
+    # Gera initramfs correctamente para bootc/ostree
+    releasever=$(/usr/bin/rpm -E %fedora)
+    basearch=$(/usr/bin/arch)
+    CACHY_VER=$(dnf list kernel-cachyos-lto -q | awk '/kernel-cachyos-lto/ {print $2}' | head -n 1 | cut -d'-' -f1)-cachyos1.lto.fc${releasever}.${basearch}
+    depmod -a "${CACHY_VER}"
+    export DRACUT_NO_XATTR=1
+    /usr/bin/dracut --no-hostonly --kver "${CACHY_VER}" --reproducible -v --add ostree -f "/lib/modules/${CACHY_VER}/initramfs.img"
+    chmod 0600 "/lib/modules/${CACHY_VER}/initramfs.img"
     echo "kernel-cachyos-lto instalado com sucesso"
 
 else
