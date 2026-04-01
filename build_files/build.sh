@@ -7,6 +7,9 @@ set -ouex pipefail
 
 KERNEL_FLAVOR="${KERNEL_FLAVOR:-bazzite}"
 
+# DNF5 — downloads paralelos
+sed -i '/^\[main\]/a max_parallel_downloads=10' /etc/dnf/dnf.conf
+
 # Limpeza repos Terra
 rm -f /etc/yum.repos.d/*terra*.repo || true
 dnf5 config-manager setopt terra.enabled=0 terra-extras.enabled=0 terra-mesa.enabled=0 2>/dev/null || true
@@ -110,6 +113,30 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
         echo "${BAZZITE_KERNEL_PKGS}" | xargs dnf5 remove -y || true
     fi
 
+    ## Required to install CachyOS settings
+    rm -rf /usr/lib/systemd/coredump.conf
+
+    ## Install KSMD and CachyOS-Settings
+    dnf5 install -y libcap-ng libcap-ng-devel procps-ng procps-ng-devel
+    dnf5 install -y cachyos-settings cachyos-ksm-settings --allowerasing
+
+    ## Enable KSMD
+    tee "/usr/lib/systemd/system/ksmd.service" > /dev/null <<KSMD
+[Unit]
+Description=Activates Kernel Samepage Merging
+ConditionPathExists=/sys/kernel/mm/ksm
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/ksmctl -e
+ExecStop=/usr/bin/ksmctl -d
+
+[Install]
+WantedBy=multi-user.target
+KSMD
+    ln -s /usr/lib/systemd/system/ksmd.service /etc/systemd/system/multi-user.target.wants/ksmd.service
+
     # Restaura scriptlets
     mv -f 05-rpmostree.install.bak 05-rpmostree.install \
         && mv -f 50-dracut.install.bak 50-dracut.install
@@ -123,6 +150,10 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
     export DRACUT_NO_XATTR=1
     /usr/bin/dracut --no-hostonly --kver "${CACHY_VER}" --reproducible -v --add ostree -f "/lib/modules/${CACHY_VER}/initramfs.img"
     chmod 0600 "/lib/modules/${CACHY_VER}/initramfs.img"
+    # KWin better blur
+    dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
+    dnf5 install -y kwin-effects-better-blur-dx
+
     echo "kernel-cachyos-lto instalado com sucesso"
 
 else
@@ -347,6 +378,9 @@ dnf5 install -y \
     yoshimi \
     ladspa-tap-plugins \
     ladspa-fil-plugins
+
+# Limpeza cache DNF — reduz tamanho da imagem
+dnf5 clean all
 
 # Corrigir bbr → cubic (bbr falha no boot em composefs)
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
