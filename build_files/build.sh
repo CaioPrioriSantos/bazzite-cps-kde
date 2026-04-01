@@ -303,7 +303,7 @@ Type=oneshot
 Restart=on-failure
 RestartSec=30
 RemainAfterExit=yes
-ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && xargs flatpak install --system --noninteractive flathub < /usr/share/bazzite-cps/flatpaks.list && touch /var/lib/bazzite-cps/.flatpaks-installed'
+ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && xargs flatpak install --system --noninteractive flathub < /usr/share/bazzite-cps/flatpaks.list && touch /var/lib/bazzite-cps/.flatpaks-installed && flatpak override --system org.ardour.Ardour --filesystem=host'
 
 [Install]
 WantedBy=multi-user.target
@@ -312,16 +312,19 @@ SVCEOF
 systemctl enable bazzite-cps-flatpaks.service
 
 
+# RPM Fusion Free — necessário para Ardour e plugins LV2
+dnf5 install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm 2>/dev/null || true
+
 # Ardour nativo + plugins de áudio
 dnf5 install -y \
-    ardour \
-    lsp-plugins-lv2 \
+    ardour9 \
+    lsp-plugins \
     calf \
     zam-plugins \
     zynaddsubfx \
     yoshimi \
-    tap-plugins \
-    fil-plugins
+    ladspa-tap-plugins \
+    ladspa-fil-plugins
 
 # Corrigir bbr → cubic (bbr falha no boot em composefs)
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
