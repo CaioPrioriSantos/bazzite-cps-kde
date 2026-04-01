@@ -151,6 +151,12 @@ KSMD
     /usr/bin/dracut --no-hostonly --kver "${CACHY_VER}" --reproducible -v --add ostree -f "/lib/modules/${CACHY_VER}/initramfs.img"
     chmod 0600 "/lib/modules/${CACHY_VER}/initramfs.img"
     echo "kernel-cachyos-lto instalado com sucesso"
+    # Silenciar módulos Bazzite que não existem no kernel CachyOS
+    for mod in gcadapter_oc kvmfr nct6687; do
+        printf '# %s not built for CachyOS kernel — silenced\n' "$mod" \
+            > /etc/modules-load.d/${mod}.conf
+    done
+
 
 else
     echo "kernel Bazzite mantido — melhorias CachyOS runtime aplicadas"
@@ -352,7 +358,7 @@ Type=oneshot
 Restart=on-failure
 RestartSec=30
 RemainAfterExit=yes
-ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && xargs flatpak install --system --noninteractive flathub < /usr/share/bazzite-cps/flatpaks.list && touch /var/lib/bazzite-cps/.flatpaks-installed && flatpak override --system org.ardour.Ardour --filesystem=host'
+ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && xargs flatpak install --system --noninteractive flathub < /usr/share/bazzite-cps/flatpaks.list && touch /var/lib/bazzite-cps/.flatpaks-installed'
 
 [Install]
 WantedBy=multi-user.target
