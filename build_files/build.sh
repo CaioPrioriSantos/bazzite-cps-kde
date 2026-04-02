@@ -27,6 +27,167 @@ systemctl enable podman.socket
 systemctl enable asusd.service
 systemctl enable supergfxd.service
 
+# ------------------------------------------------------------------------------
+# ASUS + Tuned sync — tuned manda, ASUS acompanha + aplica PPT/NV
+# ------------------------------------------------------------------------------
+mkdir -p /etc/asusd /usr/local/bin /usr/lib/systemd/system
+
+cat > /etc/asusd/asusd.ron << 'RON'
+(
+    charge_control_end_threshold: 94,
+    base_charge_control_end_threshold: 0,
+    disable_nvidia_powerd_on_battery: true,
+    ac_command: "",
+    bat_command: "",
+    platform_profile_linked_epp: false,
+    platform_profile_on_battery: Quiet,
+    change_platform_profile_on_battery: false,
+    platform_profile_on_ac: Performance,
+    change_platform_profile_on_ac: false,
+    profile_quiet_epp: Power,
+    profile_balanced_epp: BalancePower,
+    profile_custom_epp: Performance,
+    profile_performance_epp: Performance,
+    ac_profile_tunings: {
+        Performance: (
+            enabled: true,
+            group: {
+                PptApuSppt: 100,
+                PptPlatformSppt: 115,
+            },
+        ),
+        Balanced: (
+            enabled: true,
+            group: {
+                PptApuSppt: 45,
+                PptPlatformSppt: 65,
+            },
+        ),
+        Quiet: (
+            enabled: true,
+            group: {
+                PptApuSppt: 25,
+                PptPlatformSppt: 40,
+            },
+        ),
+    },
+    dc_profile_tunings: {
+        Performance: (
+            enabled: true,
+            group: {
+                PptApuSppt: 50,
+                PptPlatformSppt: 80,
+            },
+        ),
+        Balanced: (
+            enabled: true,
+            group: {
+                PptApuSppt: 30,
+                PptPlatformSppt: 45,
+            },
+        ),
+        Quiet: (
+            enabled: true,
+            group: {
+                PptApuSppt: 15,
+                PptPlatformSppt: 30,
+            },
+        ),
+    },
+    armoury_settings: {},
+)
+RON
+
+cat > /usr/local/bin/asus-tuned-sync.sh << 'SH'
+#!/bin/bash
+set -euo pipefail
+
+get_ac() {
+    cat /sys/class/power_supply/AC0/online 2>/dev/null || \
+    cat /sys/class/power_supply/AC/online 2>/dev/null || \
+    echo 1
+}
+
+get_tuned() {
+    tuned-adm active 2>/dev/null | sed 's/^Current active profile: //'
+}
+
+LAST=""
+
+while true; do
+    AC="$(get_ac)"
+    TP="$(get_tuned)"
+
+    case "$TP" in
+        throughput-performance-bazzite|throughput-performance)
+            PP="performance"
+            if [ "$AC" = "1" ]; then
+                PL1=125; PL2=150; FPPT=150; APU=100; PLATFORM=115; NV=87
+            else
+                PL1=80; PL2=100; FPPT=100; APU=50; PLATFORM=80; NV=83
+            fi
+            ;;
+        balanced-bazzite|balanced|balanced-battery|balanced-battery-bazzite)
+            PP="balanced"
+            if [ "$AC" = "1" ]; then
+                PL1=80; PL2=100; FPPT=100; APU=45; PLATFORM=65; NV=83
+            else
+                PL1=45; PL2=60; FPPT=60; APU=30; PLATFORM=45; NV=80
+            fi
+            ;;
+        powersave-bazzite|powersave|powersave-battery-bazzite)
+            PP="quiet"
+            if [ "$AC" = "1" ]; then
+                PL1=35; PL2=45; FPPT=45; APU=25; PLATFORM=40; NV=75
+            else
+                PL1=20; PL2=25; FPPT=25; APU=15; PLATFORM=30; NV=75
+            fi
+            ;;
+        *)
+            sleep 1
+            continue
+            ;;
+    esac
+
+    CUR="$TP|$AC|$PP|$PL1|$PL2|$FPPT|$APU|$PLATFORM|$NV"
+
+    if [ "$CUR" != "$LAST" ]; then
+        LAST="$CUR"
+        echo "$PP"       > /sys/firmware/acpi/platform_profile
+        echo "$PL1"      > /sys/devices/platform/asus-nb-wmi/ppt_pl1_spl
+        echo "$PL2"      > /sys/devices/platform/asus-nb-wmi/ppt_pl2_sppt
+        echo "$FPPT"     > /sys/devices/platform/asus-nb-wmi/ppt_fppt
+        echo "$APU"      > /sys/devices/platform/asus-nb-wmi/ppt_apu_sppt
+        echo "$PLATFORM" > /sys/devices/platform/asus-nb-wmi/ppt_platform_sppt
+        echo "$NV"       > /sys/devices/platform/asus-nb-wmi/nv_temp_target
+        logger -t asus-tuned-sync "TP=$TP AC=$AC PP=$PP PL1=$PL1 PL2=$PL2 FPPT=$FPPT APU=$APU PLATFORM=$PLATFORM NV=$NV"
+    fi
+
+    sleep 1
+done
+SH
+
+chmod 755 /usr/local/bin/asus-tuned-sync.sh
+
+cat > /usr/lib/systemd/system/asus-tuned-sync.service << 'UNIT'
+[Unit]
+Description=Sync Tuned profile with ASUS platform profile and extra PPTs
+After=asusd.service multi-user.target
+Wants=asusd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/asus-tuned-sync.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl enable asus-tuned-sync.service
+
+
 # CachyOS addons runtime
 dnf5 copr enable -y bieszczaders/kernel-cachyos-addons
 # scx-scheds já vem no Bazzite; cachyos-settings conflitua com zram-generator-defaults
