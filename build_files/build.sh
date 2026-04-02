@@ -30,7 +30,7 @@ systemctl enable supergfxd.service
 # ------------------------------------------------------------------------------
 # ASUS + Tuned sync — tuned manda, ASUS acompanha + aplica PPT/NV
 # ------------------------------------------------------------------------------
-mkdir -p /etc/asusd /usr/local/bin /usr/lib/systemd/system
+mkdir -p /etc/asusd /usr/lib/systemd/system
 
 cat > /etc/asusd/asusd.ron << 'RON'
 (
@@ -98,7 +98,7 @@ cat > /etc/asusd/asusd.ron << 'RON'
 )
 RON
 
-cat > /usr/local/bin/asus-tuned-sync.sh << 'SH'
+cat > /usr/bin/asus-tuned-sync.sh << 'SH'
 #!/bin/bash
 set -euo pipefail
 
@@ -167,7 +167,7 @@ while true; do
 done
 SH
 
-chmod 755 /usr/local/bin/asus-tuned-sync.sh
+chmod 755 /usr/bin/asus-tuned-sync.sh
 
 cat > /usr/lib/systemd/system/asus-tuned-sync.service << 'UNIT'
 [Unit]
@@ -177,7 +177,7 @@ Wants=asusd.service
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/asus-tuned-sync.sh
+ExecStart=/usr/bin/asus-tuned-sync.sh
 Restart=always
 RestartSec=2
 
