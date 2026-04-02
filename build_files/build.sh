@@ -19,6 +19,75 @@ dnf5 install -y \
 systemctl enable podman.socket
 systemctl enable asusd.service
 systemctl enable supergfxd.service
+# asusd.ron — apenas variante CachyOS (limites confirmados kernel CachyOS-LTO)
+if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
+    mkdir -p /etc/asusd
+    cat > /etc/asusd/asusd.ron << 'RON'
+(
+    charge_control_end_threshold: 94,
+    base_charge_control_end_threshold: 0,
+    disable_nvidia_powerd_on_battery: true,
+    ac_command: "",
+    bat_command: "",
+    platform_profile_linked_epp: true,
+    platform_profile_on_battery: Quiet,
+    change_platform_profile_on_battery: false,
+    platform_profile_on_ac: Performance,
+    change_platform_profile_on_ac: false,
+    profile_quiet_epp: Power,
+    profile_balanced_epp: BalancePower,
+    profile_custom_epp: Performance,
+    profile_performance_epp: Performance,
+    ac_profile_tunings: {
+        Performance: (
+            enabled: true,
+            group: {
+                PptApuSppt: 80,
+                PptPlatformSppt: 115,
+            },
+        ),
+        Balanced: (
+            enabled: true,
+            group: {
+                PptApuSppt: 45,
+                PptPlatformSppt: 70,
+            },
+        ),
+        Quiet: (
+            enabled: true,
+            group: {
+                PptApuSppt: 15,
+                PptPlatformSppt: 30,
+            },
+        ),
+    },
+    dc_profile_tunings: {
+        Performance: (
+            enabled: true,
+            group: {
+                PptApuSppt: 45,
+                PptPlatformSppt: 60,
+            },
+        ),
+        Balanced: (
+            enabled: true,
+            group: {
+                PptApuSppt: 35,
+                PptPlatformSppt: 50,
+            },
+        ),
+        Quiet: (
+            enabled: true,
+            group: {
+                PptApuSppt: 25,
+                PptPlatformSppt: 40,
+            },
+        ),
+    },
+    armoury_settings: {},
+)
+RON
+fi
 # CachyOS addons runtime
 dnf5 copr enable -y bieszczaders/kernel-cachyos-addons
 # scx-scheds já vem no Bazzite; cachyos-settings conflitua com zram-generator-defaults
