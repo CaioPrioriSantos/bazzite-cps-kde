@@ -30,9 +30,9 @@ systemctl enable supergfxd.service
 # ------------------------------------------------------------------------------
 # ASUS + Tuned sync — tuned manda, ASUS acompanha + aplica PPT/NV
 # ------------------------------------------------------------------------------
-mkdir -p /etc/asusd /usr/lib/systemd/system
+mkdir -p /etc/asusd /usr/lib/systemd/system /usr/share/bazzite-cps/asus
 
-cat > /etc/asusd/asusd.ron << 'RON'
+cat > /usr/share/bazzite-cps/asus/asusd.ron << 'RON'
 (
     charge_control_end_threshold: 94,
     base_charge_control_end_threshold: 0,
@@ -52,22 +52,34 @@ cat > /etc/asusd/asusd.ron << 'RON'
         Performance: (
             enabled: true,
             group: {
+                PptPl1Spl: 150,
+                PptPl2Sppt: 150,
+                PptPl3Fppt: 150,
                 PptApuSppt: 100,
                 PptPlatformSppt: 115,
+                NvTempTarget: 87,
             },
         ),
         Balanced: (
             enabled: true,
             group: {
+                PptPl1Spl: 80,
+                PptPl2Sppt: 100,
+                PptPl3Fppt: 100,
                 PptApuSppt: 45,
                 PptPlatformSppt: 65,
+                NvTempTarget: 83,
             },
         ),
         Quiet: (
             enabled: true,
             group: {
+                PptPl1Spl: 35,
+                PptPl2Sppt: 45,
+                PptPl3Fppt: 45,
                 PptApuSppt: 25,
                 PptPlatformSppt: 40,
+                NvTempTarget: 75,
             },
         ),
     },
@@ -75,28 +87,42 @@ cat > /etc/asusd/asusd.ron << 'RON'
         Performance: (
             enabled: true,
             group: {
+                PptPl1Spl: 80,
+                PptPl2Sppt: 100,
+                PptPl3Fppt: 100,
                 PptApuSppt: 50,
                 PptPlatformSppt: 80,
+                NvTempTarget: 83,
             },
         ),
         Balanced: (
             enabled: true,
             group: {
+                PptPl1Spl: 45,
+                PptPl2Sppt: 60,
+                PptPl3Fppt: 60,
                 PptApuSppt: 30,
                 PptPlatformSppt: 45,
+                NvTempTarget: 80,
             },
         ),
         Quiet: (
             enabled: true,
             group: {
+                PptPl1Spl: 20,
+                PptPl2Sppt: 25,
+                PptPl3Fppt: 25,
                 PptApuSppt: 15,
                 PptPlatformSppt: 30,
+                NvTempTarget: 75,
             },
         ),
     },
     armoury_settings: {},
 )
 RON
+
+install -Dm644 /usr/share/bazzite-cps/asus/asusd.ron /etc/asusd/asusd.ron
 
 cat > /usr/bin/asus-tuned-sync.sh << 'SH'
 #!/bin/bash
@@ -122,7 +148,7 @@ while true; do
         throughput-performance-bazzite|throughput-performance)
             PP="performance"
             if [ "$AC" = "1" ]; then
-                PL1=125; PL2=150; FPPT=150; APU=100; PLATFORM=115; NV=87
+                PL1=150; PL2=150; FPPT=150; APU=100; PLATFORM=115; NV=87
             else
                 PL1=80; PL2=100; FPPT=100; APU=50; PLATFORM=80; NV=83
             fi
@@ -185,6 +211,22 @@ RestartSec=2
 WantedBy=multi-user.target
 UNIT
 
+cat > /usr/lib/systemd/system/asus-bazzite-cps-apply.service << 'UNIT'
+[Unit]
+Description=Apply bazzite-cps ASUS config into /etc
+After=local-fs.target
+Before=asusd.service asus-tuned-sync.service
+ConditionPathExists=/usr/share/bazzite-cps/asus/asusd.ron
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/install -Dm644 /usr/share/bazzite-cps/asus/asusd.ron /etc/asusd/asusd.ron
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl enable asus-bazzite-cps-apply.service
 systemctl enable asus-tuned-sync.service
 
 
