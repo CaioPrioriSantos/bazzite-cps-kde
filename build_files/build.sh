@@ -21,6 +21,7 @@ systemctl enable asusd.service
 systemctl enable supergfxd.service
 # asus-legacy-ppt — variante kernel Bazzite (ppt_fppt e nv_temp_target via asus-nb-wmi)
 if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
+    mkdir -p /usr/local/bin
     cat > /usr/local/bin/asus-legacy-ppt.sh << 'SH'
 #!/bin/bash
 get_ac() {
