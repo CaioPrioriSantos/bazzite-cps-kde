@@ -7,7 +7,6 @@ set -ouex pipefail
 KERNEL_FLAVOR="${KERNEL_FLAVOR:-bazzite}"
 # DNF5 — downloads paralelos
 sed -i '/^\[main\]/a max_parallel_downloads=10' /etc/dnf/dnf.conf
-# Limpeza repos Terra
 rm -f /etc/yum.repos.d/*terra*.repo || true
 dnf5 config-manager setopt terra.enabled=0 terra-extras.enabled=0 terra-mesa.enabled=0 2>/dev/null || true
 # COPR asus-linux
@@ -19,56 +18,8 @@ dnf5 install -y \
 systemctl enable podman.socket
 systemctl enable asusd.service
 systemctl enable supergfxd.service
-# asus-legacy-ppt — variante kernel Bazzite (ppt_fppt e nv_temp_target via asus-nb-wmi)
+# asusd.ron — variante kernel Bazzite (limites confirmados)
 if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
-    mkdir -p /usr/local/bin
-    cat > /usr/local/bin/asus-legacy-ppt.sh << 'SH'
-#!/bin/bash
-get_ac() {
-    cat /sys/class/power_supply/AC0/online 2>/dev/null ||     cat /sys/class/power_supply/AC/online 2>/dev/null ||     echo 1
-}
-LAST=""
-while true; do
-    PROFILE=$(cat /sys/firmware/acpi/platform_profile 2>/dev/null)
-    AC=$(get_ac)
-    CUR="$PROFILE|$AC"
-    if [[ "$CUR" != "$LAST" ]]; then
-        LAST="$CUR"
-        if [[ "$AC" == "1" ]]; then
-            case "$PROFILE" in
-                performance) FPPT=150; NV=87 ;;
-                balanced)    FPPT=120; NV=83 ;;
-                quiet)       FPPT=55;  NV=75 ;;
-            esac
-        else
-            case "$PROFILE" in
-                performance) FPPT=100; NV=83 ;;
-                balanced)    FPPT=70;  NV=80 ;;
-                quiet)       FPPT=35;  NV=75 ;;
-            esac
-        fi
-        echo "$FPPT" > /sys/devices/platform/asus-nb-wmi/ppt_fppt 2>/dev/null
-        echo "$NV"   > /sys/devices/platform/asus-nb-wmi/nv_temp_target 2>/dev/null
-        logger -t asus-legacy-ppt "PROFILE=$PROFILE AC=$AC FPPT=$FPPT NV=$NV"
-    fi
-    sleep 2
-done
-SH
-    chmod 755 /usr/local/bin/asus-legacy-ppt.sh
-    cat > /usr/lib/systemd/system/asus-legacy-ppt.service << 'UNIT'
-[Unit]
-Description=ASUS legacy PPT — ppt_fppt e nv_temp_target por perfil
-After=asusd.service
-Wants=asusd.service
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/asus-legacy-ppt.sh
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-UNIT
-
     mkdir -p /etc/asusd
     cat > /etc/asusd/asusd.ron << 'RON'
 (
@@ -147,9 +98,8 @@ UNIT
     armoury_settings: {},
 )
 RON
-    systemctl enable asus-legacy-ppt.service
 fi
-# asusd.ron — apenas variante CachyOS (limites confirmados kernel CachyOS-LTO)
+# asusd.ron — variante kernel CachyOS (limites confirmados kernel CachyOS-LTO)
 if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
     mkdir -p /etc/asusd
     cat > /etc/asusd/asusd.ron << 'RON'
@@ -220,32 +170,18 @@ RON
 fi
 # CachyOS addons runtime
 dnf5 copr enable -y bieszczaders/kernel-cachyos-addons
-# scx-scheds já vem no Bazzite; cachyos-settings conflitua com zram-generator-defaults
 systemctl enable scx.service 2>/dev/null || true
 echo 'SCX_SCHEDULER=scx_lavd' > /etc/default/scx
-# ------------------------------------------------------------------------------
-# Tweaks de performance (sysctl)
-# ------------------------------------------------------------------------------
 cat > /usr/lib/sysctl.d/99-bazzite-cps-perf.conf << 'SYSCTL'
-# Cache VFS — retém mais cache de directórios/inodes (padrão=100)
 vm.vfs_cache_pressure = 50
-# Flush de escrita — 256MB antes de começar, 64MB em background
 vm.dirty_bytes = 268435456
 vm.dirty_background_bytes = 67108864
-# Frequência de flush — menos wakeups do kernel (padrão=500)
 vm.dirty_writeback_centisecs = 1500
-# Readahead de swap desativado — melhora latência com ZRAM
 vm.page-cluster = 0
-# Watchdog desativado — poupa ciclos de CPU
 kernel.nmi_watchdog = 0
-# Fila de rede maior — menos drops em carga alta
 net.core.netdev_max_backlog = 16384
-# Limite de ficheiros abertos
 fs.file-max = 2097152
 SYSCTL
-# ------------------------------------------------------------------------------
-# Tweaks udev — áudio, timers, watchdog
-# ------------------------------------------------------------------------------
 cat > /usr/lib/modprobe.d/99-bazzite-cps-audio.conf << 'MODPROBE'
 options snd_hda_intel power_save=0
 MODPROBE
@@ -264,11 +200,7 @@ ACTION=="add", SUBSYSTEM=="sound", KERNEL=="card*", DRIVERS=="snd_hda_intel", \
     [[ $$(cat /sys/class/power_supply/BAT0/status 2>/dev/null) != \"Discharging\" ]] && \
     echo 0 > /sys/module/snd_hda_intel/parameters/power_save'"
 UDEV
-# ------------------------------------------------------------------------------
-# VARIANTE CACHYOS
-# ------------------------------------------------------------------------------
 if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
-    # Desactiva scriptlets de kernel durante o install
     cd /usr/lib/kernel/install.d \
         && mv 05-rpmostree.install 05-rpmostree.install.bak \
         && mv 50-dracut.install 50-dracut.install.bak \
@@ -285,12 +217,9 @@ if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
     if [[ -n "${BAZZITE_KERNEL_PKGS}" ]]; then
         echo "${BAZZITE_KERNEL_PKGS}" | xargs dnf5 remove -y || true
     fi
-    ## Required to install CachyOS settings
     rm -rf /usr/lib/systemd/coredump.conf
-    ## Install KSMD and CachyOS-Settings
     dnf5 install -y libcap-ng libcap-ng-devel procps-ng procps-ng-devel
     dnf5 install -y cachyos-settings cachyos-ksm-settings --allowerasing
-    ## Enable KSMD
     tee "/usr/lib/systemd/system/ksmd.service" > /dev/null <<KSMD
 [Unit]
 Description=Activates Kernel Samepage Merging
@@ -304,11 +233,9 @@ ExecStop=/usr/bin/ksmctl -d
 WantedBy=multi-user.target
 KSMD
     ln -s /usr/lib/systemd/system/ksmd.service /etc/systemd/system/multi-user.target.wants/ksmd.service
-    # Restaura scriptlets
     mv -f 05-rpmostree.install.bak 05-rpmostree.install \
         && mv -f 50-dracut.install.bak 50-dracut.install
     cd -
-    # Gera initramfs correctamente para bootc/ostree
     releasever=$(/usr/bin/rpm -E %fedora)
     basearch=$(/usr/bin/arch)
     CACHY_VER=$(dnf list kernel-cachyos-lto -q | awk '/kernel-cachyos-lto/ {print $2}' | head -n 1 | cut -d'-' -f1)-cachyos1.lto.fc${releasever}.${basearch}
@@ -317,7 +244,6 @@ KSMD
     /usr/bin/dracut --no-hostonly --kver "${CACHY_VER}" --reproducible -v --add ostree -f "/lib/modules/${CACHY_VER}/initramfs.img"
     chmod 0600 "/lib/modules/${CACHY_VER}/initramfs.img"
     echo "kernel-cachyos-lto instalado com sucesso"
-    # Silenciar módulos Bazzite que não existem no kernel CachyOS
     for mod in gcadapter_oc kvmfr nct6687; do
         printf '# %s not built for CachyOS kernel — silenced\n' "$mod" \
             > /etc/modules-load.d/${mod}.conf
@@ -325,17 +251,14 @@ KSMD
 else
     echo "kernel Bazzite mantido — melhorias CachyOS runtime aplicadas"
 fi
-# CPU DMA latency — acesso sem root para PipeWire/JACK
 cat > /usr/lib/udev/rules.d/99-bazzite-cps-dma-latency.rules << 'UDEV'
 KERNEL=="cpu_dma_latency", GROUP="audio", MODE="0660"
 UDEV
-# journald — limita logs a 50MB
 mkdir -p /etc/systemd/journald.conf.d
 cat > /etc/systemd/journald.conf.d/99-bazzite-cps.conf << 'JOURNALD'
 [Journal]
 SystemMaxUse=50M
 JOURNALD
-# Service timeouts — boot/shutdown mais rápido
 mkdir -p /etc/systemd/system.conf.d
 cat > /etc/systemd/system.conf.d/99-bazzite-cps-timeouts.conf << 'SYSTEMD'
 [Manager]
@@ -377,9 +300,6 @@ dnf5 install -y \
     flamegraph
 rm -f /etc/yum.repos.d/vscode.repo
 dnf5 config-manager setopt docker-ce-stable.enabled=0
-# ------------------------------------------------------------------------------
-# DX — Pacotes adicionais
-# ------------------------------------------------------------------------------
 dnf5 install -y \
     bcc \
     bpftop \
@@ -408,7 +328,7 @@ dnf5 install -y \
 dnf5 install -y gh
 dnf5 install -y gparted
 # ------------------------------------------------------------------------------
-# Firefox Mozilla — instalação de sistema em /opt/firefox
+# Firefox Mozilla
 # ------------------------------------------------------------------------------
 tmpdir="$(mktemp -d)"
 FIREFOX_URL="$(curl -fsSLI -o /dev/null -w '%{url_effective}' 'https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US')"
@@ -437,7 +357,7 @@ StartupNotify=true
 DESKTOP
 rm -rf "$tmpdir"
 # ------------------------------------------------------------------------------
-# Flatpaks — instalacao no primeiro boot via systemd oneshot
+# Flatpaks
 # ------------------------------------------------------------------------------
 mkdir -p /usr/share/bazzite-cps
 cat > /usr/share/bazzite-cps/flatpaks.list << 'FLATPAKEOF'
@@ -478,9 +398,7 @@ ExecStart=/usr/bin/bash -c 'mkdir -p /var/lib/bazzite-cps && flatpak remote-add 
 WantedBy=multi-user.target
 SVCEOF
 systemctl enable bazzite-cps-flatpaks.service
-# RPM Fusion Free
 dnf5 install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm 2>/dev/null || true
-# Ardour nativo + plugins de áudio
 dnf5 install -y \
     ardour9 \
     lsp-plugins \
@@ -493,9 +411,7 @@ dnf5 install -y \
 # KWin better blur
 dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
 dnf5 install -y kwin-effects-better-blur-dx
-# Limpeza cache DNF
 dnf5 clean all
-# Corrigir bbr → cubic
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
 fi
