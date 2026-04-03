@@ -67,6 +67,85 @@ RestartSec=3
 [Install]
 WantedBy=multi-user.target
 UNIT
+
+    mkdir -p /etc/asusd
+    cat > /etc/asusd/asusd.ron << 'RON'
+(
+    charge_control_end_threshold: 94,
+    base_charge_control_end_threshold: 0,
+    disable_nvidia_powerd_on_battery: true,
+    ac_command: "",
+    bat_command: "",
+    platform_profile_linked_epp: true,
+    platform_profile_on_battery: Quiet,
+    change_platform_profile_on_battery: false,
+    platform_profile_on_ac: Performance,
+    change_platform_profile_on_ac: false,
+    profile_quiet_epp: Power,
+    profile_balanced_epp: BalancePower,
+    profile_custom_epp: Performance,
+    profile_performance_epp: Performance,
+    ac_profile_tunings: {
+        Performance: (
+            enabled: true,
+            group: {
+                PptApuSppt: 100,
+                PptPlatformSppt: 100,
+                PptPl1Spl: 150,
+                PptPl2Sppt: 150,
+            },
+        ),
+        Balanced: (
+            enabled: true,
+            group: {
+                PptApuSppt: 60,
+                PptPlatformSppt: 80,
+                PptPl1Spl: 100,
+                PptPl2Sppt: 120,
+            },
+        ),
+        Quiet: (
+            enabled: true,
+            group: {
+                PptApuSppt: 25,
+                PptPlatformSppt: 40,
+                PptPl1Spl: 45,
+                PptPl2Sppt: 55,
+            },
+        ),
+    },
+    dc_profile_tunings: {
+        Performance: (
+            enabled: true,
+            group: {
+                PptApuSppt: 45,
+                PptPlatformSppt: 60,
+                PptPl1Spl: 80,
+                PptPl2Sppt: 100,
+            },
+        ),
+        Balanced: (
+            enabled: true,
+            group: {
+                PptApuSppt: 30,
+                PptPlatformSppt: 45,
+                PptPl1Spl: 55,
+                PptPl2Sppt: 70,
+            },
+        ),
+        Quiet: (
+            enabled: true,
+            group: {
+                PptApuSppt: 15,
+                PptPlatformSppt: 30,
+                PptPl1Spl: 25,
+                PptPl2Sppt: 35,
+            },
+        ),
+    },
+    armoury_settings: {},
+)
+RON
     systemctl enable asus-legacy-ppt.service
 fi
 # asusd.ron — apenas variante CachyOS (limites confirmados kernel CachyOS-LTO)
