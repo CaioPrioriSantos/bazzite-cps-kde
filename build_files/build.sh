@@ -19,6 +19,56 @@ dnf5 install -y \
 systemctl enable podman.socket
 systemctl enable asusd.service
 systemctl enable supergfxd.service
+# asus-legacy-ppt — variante kernel Bazzite (ppt_fppt e nv_temp_target via asus-nb-wmi)
+if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
+    cat > /usr/local/bin/asus-legacy-ppt.sh << 'SH'
+#!/bin/bash
+get_ac() {
+    cat /sys/class/power_supply/AC0/online 2>/dev/null ||     cat /sys/class/power_supply/AC/online 2>/dev/null ||     echo 1
+}
+LAST=""
+while true; do
+    PROFILE=$(cat /sys/firmware/acpi/platform_profile 2>/dev/null)
+    AC=$(get_ac)
+    CUR="$PROFILE|$AC"
+    if [[ "$CUR" != "$LAST" ]]; then
+        LAST="$CUR"
+        if [[ "$AC" == "1" ]]; then
+            case "$PROFILE" in
+                performance) FPPT=150; NV=87 ;;
+                balanced)    FPPT=120; NV=83 ;;
+                quiet)       FPPT=55;  NV=75 ;;
+            esac
+        else
+            case "$PROFILE" in
+                performance) FPPT=100; NV=83 ;;
+                balanced)    FPPT=70;  NV=80 ;;
+                quiet)       FPPT=35;  NV=75 ;;
+            esac
+        fi
+        echo "$FPPT" > /sys/devices/platform/asus-nb-wmi/ppt_fppt 2>/dev/null
+        echo "$NV"   > /sys/devices/platform/asus-nb-wmi/nv_temp_target 2>/dev/null
+        logger -t asus-legacy-ppt "PROFILE=$PROFILE AC=$AC FPPT=$FPPT NV=$NV"
+    fi
+    sleep 2
+done
+SH
+    chmod 755 /usr/local/bin/asus-legacy-ppt.sh
+    cat > /usr/lib/systemd/system/asus-legacy-ppt.service << 'UNIT'
+[Unit]
+Description=ASUS legacy PPT — ppt_fppt e nv_temp_target por perfil
+After=asusd.service
+Wants=asusd.service
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/asus-legacy-ppt.sh
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+UNIT
+    systemctl enable asus-legacy-ppt.service
+fi
 # asusd.ron — apenas variante CachyOS (limites confirmados kernel CachyOS-LTO)
 if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
     mkdir -p /etc/asusd
