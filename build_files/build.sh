@@ -402,7 +402,6 @@ dnf5 install -y \
     xz-devel \
     ncurses-devel \
     tk-devel \
-    SDL2-devel \
     freetype-devel
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
