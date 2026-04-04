@@ -335,6 +335,7 @@ FIREFOX_URL="$(curl -fsSLI -o /dev/null -w '%{url_effective}' 'https://download.
 FIREFOX_ARCHIVE="$tmpdir/$(basename "${FIREFOX_URL%%\?*}")"
 curl -fsSL "$FIREFOX_URL" -o "$FIREFOX_ARCHIVE"
 mkdir -p /var/opt /var/usrlocal/bin /usr/share/applications
+chmod 777 /var/opt
 rm -rf /opt/firefox
 case "$FIREFOX_ARCHIVE" in
   *.tar.xz)  tar -xJf "$FIREFOX_ARCHIVE" -C /opt ;;
