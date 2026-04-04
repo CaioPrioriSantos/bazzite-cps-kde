@@ -327,61 +327,8 @@ dnf5 install -y \
     hyperfine
 dnf5 install -y gh
 dnf5 install -y gparted
-# ------------------------------------------------------------------------------
-# Firefox Mozilla
-# ------------------------------------------------------------------------------
-tmpdir="$(mktemp -d)"
-FIREFOX_URL="$(curl -fsSLI -o /dev/null -w '%{url_effective}' 'https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US')"
-FIREFOX_ARCHIVE="$tmpdir/$(basename "${FIREFOX_URL%%\?*}")"
-curl -fsSL "$FIREFOX_URL" -o "$FIREFOX_ARCHIVE"
-mkdir -p /var/opt /var/usrlocal/bin /usr/share/applications
-chmod 777 /var/opt
-rm -rf /opt/firefox
-case "$FIREFOX_ARCHIVE" in
-  *.tar.xz)  tar -xJf "$FIREFOX_ARCHIVE" -C /opt ;;
-  *.tar.bz2) tar -xjf "$FIREFOX_ARCHIVE" -C /opt ;;
-  *.tar.gz)  tar -xzf "$FIREFOX_ARCHIVE" -C /opt ;;
-  *) echo "Formato inesperado do Firefox: $FIREFOX_ARCHIVE"; exit 1 ;;
-esac
-ln -sf /opt/firefox/firefox /usr/local/bin/firefox
-cat > /usr/share/applications/firefox-mozilla.desktop << 'DESKTOP'
-[Desktop Entry]
-Name=Firefox
-Comment=Browse the Web
-Exec=/opt/firefox/firefox %u
-Icon=/opt/firefox/browser/chrome/icons/default/default128.png
-Terminal=false
-Type=Application
-Categories=Network;WebBrowser;
-MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;x-scheme-handler/http;x-scheme-handler/https;
-StartupNotify=true
-DESKTOP
-rm -rf "$tmpdir"
-# ------------------------------------------------------------------------------
-# PyCharm Community
-# ------------------------------------------------------------------------------
-tmpdir="$(mktemp -d)"
-PYCHARM_URL=$(curl -fsSL 'https://data.services.jetbrains.com/products/releases?code=PCC&latest=true&type=release' \
-    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['PCC'][0]['downloads']['linux']['link'])")
-PYCHARM_ARCHIVE="$tmpdir/$(basename "$PYCHARM_URL")"
-curl -fsSL "$PYCHARM_URL" -o "$PYCHARM_ARCHIVE"
-rm -rf /opt/pycharm
-tar -xzf "$PYCHARM_ARCHIVE" -C /opt
-mv /opt/pycharm-community-* /opt/pycharm
-ln -sf /opt/pycharm/bin/pycharm /usr/local/bin/pycharm
-cat > /usr/share/applications/pycharm-community.desktop << 'DESKTOP'
-[Desktop Entry]
-Name=PyCharm Community
-Comment=Python IDE for Professional Developers
-Exec=/opt/pycharm/bin/pycharm %f
-Icon=/opt/pycharm/bin/pycharm.png
-Terminal=false
-Type=Application
-Categories=Development;IDE;
-StartupNotify=true
-StartupWMClass=jetbrains-pycharm-ce
-DESKTOP
-rm -rf "$tmpdir"
+
+
 # ------------------------------------------------------------------------------
 # Flatpaks
 # ------------------------------------------------------------------------------
