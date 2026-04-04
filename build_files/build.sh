@@ -384,6 +384,26 @@ dnf5 install -y \
 # KWin better blur
 dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
 dnf5 install -y kwin-effects-better-blur-dx
+# ------------------------------------------------------------------------------
+# GTK4 Python bindings + pyenv build dependencies
+# ------------------------------------------------------------------------------
+dnf5 install -y \
+    python3-gobject \
+    python3-gobject-devel \
+    gtk4-devel \
+    libadwaita \
+    libadwaita-devel \
+    vte291-gtk4
+dnf5 install -y \
+    bzip2-devel \
+    libffi-devel \
+    readline-devel \
+    sqlite-devel \
+    xz-devel \
+    ncurses-devel \
+    tk-devel \
+    SDL2-devel \
+    freetype-devel
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
