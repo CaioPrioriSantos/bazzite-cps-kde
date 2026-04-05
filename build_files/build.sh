@@ -336,7 +336,8 @@ dnf5 install -y \
     kvantum-qt5 \
     papirus-icon-theme \
     qt5ct \
-    qt6ct
+    qt6ct \
+    merkuro
 
 # ------------------------------------------------------------------------------
 # Flatpaks
