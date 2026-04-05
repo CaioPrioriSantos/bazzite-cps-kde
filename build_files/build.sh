@@ -320,6 +320,9 @@ dnf5 install -y \
     restic
 dnf5 install -y python3-ramalama
 dnf5 install -y python3.10 python3.12
+dnf5 install -y \
+    python3.10-gobject \
+    python3.12-gobject
 echo 'iptable_nat' > /usr/lib/modules-load.d/iptable_nat.conf
 dnf5 install -y \
     turbostat \
