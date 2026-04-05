@@ -319,6 +319,7 @@ dnf5 install -y \
     rclone \
     restic
 dnf5 install -y python3-ramalama
+dnf5 install -y python3.10 python3.12
 echo 'iptable_nat' > /usr/lib/modules-load.d/iptable_nat.conf
 dnf5 install -y \
     turbostat \
@@ -328,6 +329,14 @@ dnf5 install -y \
 dnf5 install -y gh
 dnf5 install -y gparted
 
+
+# KDE visual extras
+dnf5 install -y \
+    kvantum \
+    kvantum-qt5 \
+    papirus-icon-theme \
+    qt5ct \
+    qt6ct
 
 # ------------------------------------------------------------------------------
 # Flatpaks
