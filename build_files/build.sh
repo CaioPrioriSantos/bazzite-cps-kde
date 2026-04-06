@@ -332,6 +332,8 @@ dnf5 install -y gparted
 
 # KDE visual extras
 dnf5 install -y \
+    baloo \
+    baloo-widgets \
     kvantum \
     kvantum-qt5 \
     papirus-icon-theme \
