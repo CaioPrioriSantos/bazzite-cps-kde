@@ -339,7 +339,8 @@ dnf5 install -y \
     qt6ct \
     merkuro \
     crystal-dock \
-    okular
+    okular \
+    kdepim-runtime
 
 # ------------------------------------------------------------------------------
 # Flatpaks
