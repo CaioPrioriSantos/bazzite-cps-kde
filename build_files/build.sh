@@ -412,14 +412,8 @@ dnf5 install -y \
     ncurses-devel \
     tk-devel \
     freetype-devel
-# OBS + Kdenlive RPM + dependências GPU
-dnf5 install -y \
-    obs-studio \
-    obs-vkcapture \
-    v4l2loopback \
-    kdenlive \
-    libva-mesa-driver \
-    rocm-opencl
+# OBS + Kdenlive RPM + VA-API AMD
+dnf5 install -y obs-studio kdenlive mesa-va-drivers
 # PyGObject para Python 3.10 e 3.12
 mkdir -p /usr/local/lib /usr/local/lib64
 python3.10 -m ensurepip --upgrade
