@@ -319,7 +319,7 @@ dnf5 install -y \
     rclone \
     restic
 dnf5 install -y python3-ramalama
-dnf5 install -y python3.10 python3.12
+dnf5 install -y python3.10 python3.12 python3.10-devel python3.12-devel
 echo 'iptable_nat' > /usr/lib/modules-load.d/iptable_nat.conf
 dnf5 install -y \
     turbostat \
@@ -364,6 +364,7 @@ com.spotify.Client
 ar.com.tuxguitar.TuxGuitar
 org.fedoraproject.MediaWriter
 io.missioncenter.MissionCenter
+org.kde.kcalc
 FLATPAKEOF
 cat > /usr/lib/systemd/system/bazzite-cps-flatpaks.service << 'SVCEOF'
 [Unit]
@@ -413,6 +414,9 @@ dnf5 install -y \
     ncurses-devel \
     tk-devel \
     freetype-devel
+# PyGObject para Python 3.10 e 3.12
+python3.10 -m pip install --break-system-packages PyGObject
+python3.12 -m pip install --break-system-packages PyGObject
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
