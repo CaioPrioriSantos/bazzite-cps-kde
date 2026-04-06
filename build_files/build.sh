@@ -337,7 +337,7 @@ dnf5 install -y \
     papirus-icon-theme \
     qt5ct \
     qt6ct \
-    merkuro
+    merkuro \
     crystal-dock
 
 # ------------------------------------------------------------------------------
