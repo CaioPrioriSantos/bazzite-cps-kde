@@ -415,7 +415,7 @@ dnf5 install -y \
 # OBS + Kdenlive RPM + VA-API AMD
 dnf5 install -y obs-studio kdenlive mesa-va-drivers
 # PyGObject para Python 3.10 e 3.12
-mkdir -p /usr/local/lib /usr/local/lib64
+mkdir -p /usr/local/lib /usr/local/lib64 || true
 python3.10 -m ensurepip --upgrade
 python3.10 -m pip install --break-system-packages PyGObject
 python3.12 -m ensurepip --upgrade
