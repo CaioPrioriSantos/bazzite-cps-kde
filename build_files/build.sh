@@ -338,7 +338,6 @@ dnf5 install -y \
     qt5ct \
     qt6ct \
     merkuro \
-    crystal-dock \
     okular \
     kdepim-runtime \
     gwenview
