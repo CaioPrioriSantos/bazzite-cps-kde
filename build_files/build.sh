@@ -340,7 +340,8 @@ dnf5 install -y \
     merkuro \
     crystal-dock \
     okular \
-    kdepim-runtime
+    kdepim-runtime \
+    gwenview
 
 # ------------------------------------------------------------------------------
 # Flatpaks
