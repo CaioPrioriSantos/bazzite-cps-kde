@@ -347,10 +347,8 @@ cat > /usr/share/bazzite-cps/flatpaks.list << 'FLATPAKEOF'
 org.libreoffice.LibreOffice
 org.gimp.GIMP
 org.inkscape.Inkscape
-org.kde.kdenlive
 org.shotcut.Shotcut
 fr.handbrake.ghb
-com.obsproject.Studio
 org.audacityteam.Audacity
 org.musescore.MuseScore
 org.videolan.VLC
@@ -415,8 +413,16 @@ dnf5 install -y \
     tk-devel \
     freetype-devel
 # PyGObject para Python 3.10 e 3.12
-python3.10 -m pip install --break-system-packages PyGObject
-python3.12 -m pip install --break-system-packages PyGObject
+python3.10 -m ensurepip --upgrade; python3.10 -m pip install --break-system-packages PyGObject
+python3.12 -m ensurepip --upgrade; python3.12 -m pip install --break-system-packages PyGObject
+# OBS + Kdenlive RPM + dependências GPU
+dnf5 install -y \
+    obs-studio \
+    obs-vkcapture \
+    v4l2loopback \
+    kdenlive \
+    libva-mesa-driver \
+    rocm-opencl
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
