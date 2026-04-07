@@ -424,7 +424,7 @@ dnf5 install -y obs-studio kdenlive mesa-va-drivers
 # WiFi AX210 — power save adaptativo AC/DC
 cat > /usr/lib/modprobe.d/99-bazzite-cps-wifi.conf << 'MODPROBE'
 options iwlwifi power_save=1
-options iwlmvm power_scheme=2
+options iwlmvm power_scheme=3
 MODPROBE
 
 mkdir -p /usr/lib/NetworkManager/dispatcher.d
