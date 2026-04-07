@@ -415,7 +415,8 @@ dnf5 install -y \
     xz-devel \
     ncurses-devel \
     tk-devel \
-    freetype-devel
+    freetype-devel \
+    patch
 # OBS + Kdenlive RPM + VA-API AMD
 dnf5 install -y obs-studio kdenlive mesa-va-drivers
 dnf5 clean all
