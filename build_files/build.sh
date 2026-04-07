@@ -420,6 +420,26 @@ dnf5 install -y \
     patch
 # OBS + Kdenlive RPM + VA-API AMD
 dnf5 install -y obs-studio kdenlive mesa-va-drivers
+
+# WiFi AX210 — power save adaptativo AC/DC
+cat > /usr/lib/modprobe.d/99-bazzite-cps-wifi.conf << 'MODPROBE'
+options iwlwifi power_save=1
+options iwlmvm power_scheme=2
+MODPROBE
+
+mkdir -p /usr/lib/NetworkManager/dispatcher.d
+cat > /usr/lib/NetworkManager/dispatcher.d/99-wifi-power << 'DISPATCHER'
+#!/bin/bash
+if [ "$2" = "power-change" ]; then
+    if [ "$(cat /sys/class/power_supply/AC0/online 2>/dev/null)" = "1" ]; then
+        iw dev wlan0 set power_save off
+    else
+        iw dev wlan0 set power_save on
+    fi
+fi
+DISPATCHER
+chmod +x /usr/lib/NetworkManager/dispatcher.d/99-wifi-power
+
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
