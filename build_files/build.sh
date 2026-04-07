@@ -427,18 +427,10 @@ options iwlwifi power_save=1
 options iwlmvm power_scheme=3
 MODPROBE
 
-mkdir -p /usr/lib/NetworkManager/dispatcher.d
-cat > /usr/lib/NetworkManager/dispatcher.d/99-wifi-power << 'DISPATCHER'
-#!/bin/bash
-if [ "$2" = "power-change" ]; then
-    if [ "$(cat /sys/class/power_supply/AC0/online 2>/dev/null)" = "1" ]; then
-        iw dev wlan0 set power_save off
-    else
-        iw dev wlan0 set power_save on
-    fi
-fi
-DISPATCHER
-chmod +x /usr/lib/NetworkManager/dispatcher.d/99-wifi-power
+cat > /usr/lib/udev/rules.d/99-bazzite-cps-wifi-power.rules << 'UDEV'
+SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/bin/iw dev wlan0 set power_save off"
+SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/iw dev wlan0 set power_save on"
+UDEV
 
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
