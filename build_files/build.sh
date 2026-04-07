@@ -319,7 +319,7 @@ dnf5 install -y \
     rclone \
     restic
 dnf5 install -y python3-ramalama
-dnf5 install -y python3.10 python3.12 python3.10-devel python3.12-devel
+dnf5 install -y python3-devel
 echo 'iptable_nat' > /usr/lib/modules-load.d/iptable_nat.conf
 dnf5 install -y \
     turbostat \
@@ -340,6 +340,7 @@ dnf5 install -y \
     merkuro \
     okular \
     kdepim-runtime \
+    kdepim-addons \
     gwenview
 
 # ------------------------------------------------------------------------------
