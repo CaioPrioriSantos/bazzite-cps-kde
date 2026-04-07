@@ -341,7 +341,8 @@ dnf5 install -y \
     okular \
     kdepim-runtime \
     kdepim-addons \
-    gwenview
+    gwenview \
+    nautilus
 
 # ------------------------------------------------------------------------------
 # Flatpaks
