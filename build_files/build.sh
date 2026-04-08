@@ -432,6 +432,11 @@ SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/bin/iw dev wlan0 set po
 SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/iw dev wlan0 set power_save on"
 UDEV
 
+cat > /usr/lib/udev/rules.d/99-bazzite-cps-scx-power.rules << 'UDEV'
+SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/bin/scxctl start --sched scx_lavd --mode gaming"
+SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/scxctl stop"
+UDEV
+
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
