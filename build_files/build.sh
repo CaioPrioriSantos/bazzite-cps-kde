@@ -358,7 +358,6 @@ dnf5 install -y \
 mkdir -p /usr/share/bazzite-cps
 cat > /usr/share/bazzite-cps/flatpaks.list << 'io.github.ilya_zlobintsev.LACT
 FLATPAKEOF'
-org.libreoffice.LibreOffice
 org.gimp.GIMP
 org.inkscape.Inkscape
 org.shotcut.Shotcut
@@ -395,6 +394,30 @@ WantedBy=multi-user.target
 SVCEOF
 systemctl enable bazzite-cps-flatpaks.service
 dnf5 install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm 2>/dev/null || true
+
+# LibreOffice RPM + correctores ortográficos
+dnf5 install -y \
+    libreoffice \
+    libreoffice-langpack-pt \
+    libreoffice-langpack-en \
+    libreoffice-langpack-es \
+    libreoffice-langpack-it \
+    libreoffice-langpack-fr \
+    libreoffice-langpack-de \
+    hunspell-pt \
+    hunspell-en \
+    hunspell-es \
+    hunspell-it \
+    hunspell-fr \
+    hunspell-de
+
+# VERO — verificador ortográfico e gramatical pt-BR e pt-PT
+mkdir -p /tmp/vero
+curl -L -o /tmp/vero/vero-br.oxt "https://extensions.libreoffice.org/assets/downloads/z/vero-3-2-15.oxt"
+curl -L -o /tmp/vero/vero-pt.oxt "https://extensions.libreoffice.org/assets/downloads/z/vero-pt-pt-3-2-15.oxt"
+unopkg add --shared /tmp/vero/vero-br.oxt || true
+unopkg add --shared /tmp/vero/vero-pt.oxt || true
+rm -rf /tmp/vero
 dnf5 install -y \
     ardour9 \
     lsp-plugins \
