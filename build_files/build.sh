@@ -469,6 +469,11 @@ SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/bin/scxctl start --sche
 SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/scxctl stop"
 UDEV
 
+
+# DaVinci Resolve dependencies
+dnf5 install -y \
+    libcurl \
+    libcurl-devel
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
