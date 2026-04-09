@@ -332,9 +332,6 @@ dnf5 install -y gh
 dnf5 install -y \
     cmake \
     ninja-build \
-    gcc-c++ \
-    vulkan-headers \
-    vulkan-loader-devel \
     glslc
 dnf5 install -y gparted
 
