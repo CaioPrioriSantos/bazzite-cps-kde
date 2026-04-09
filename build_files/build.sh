@@ -354,7 +354,8 @@ dnf5 install -y \
 # Flatpaks
 # ------------------------------------------------------------------------------
 mkdir -p /usr/share/bazzite-cps
-cat > /usr/share/bazzite-cps/flatpaks.list << 'FLATPAKEOF'
+cat > /usr/share/bazzite-cps/flatpaks.list << 'io.github.ilya_zlobintsev.LACT
+FLATPAKEOF'
 org.libreoffice.LibreOffice
 org.gimp.GIMP
 org.inkscape.Inkscape
