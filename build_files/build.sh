@@ -412,13 +412,6 @@ dnf5 install -y \
     hunspell-fr \
     hunspell-de
 
-# VERO — verificador ortográfico e gramatical pt-BR e pt-PT
-mkdir -p /tmp/vero
-curl -L -o /tmp/vero/vero-br.oxt "https://extensions.libreoffice.org/assets/downloads/z/vero-3-2-15.oxt"
-curl -L -o /tmp/vero/vero-pt.oxt "https://extensions.libreoffice.org/assets/downloads/z/vero-pt-pt-3-2-15.oxt"
-unopkg add --shared /tmp/vero/vero-br.oxt || true
-unopkg add --shared /tmp/vero/vero-pt.oxt || true
-rm -rf /tmp/vero
 dnf5 install -y \
     ardour9 \
     lsp-plugins \
