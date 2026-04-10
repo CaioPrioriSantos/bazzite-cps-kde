@@ -398,7 +398,8 @@ dnf5 install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release
 # LibreOffice RPM + correctores ortográficos
 dnf5 install -y \
     libreoffice \
-    libreoffice-langpack-pt \
+    libreoffice-langpack-pt-BR \
+    libreoffice-langpack-pt-PT \
     libreoffice-langpack-en \
     libreoffice-langpack-es \
     libreoffice-langpack-it \
