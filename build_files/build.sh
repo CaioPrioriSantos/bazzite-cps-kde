@@ -15,7 +15,6 @@ dnf5 install -y \
     asusctl \
     supergfxctl \
     rog-control-center
-systemctl enable podman.socket
 systemctl enable asusd.service
 systemctl enable supergfxd.service
 # asusd.ron — variante kernel Bazzite (limites confirmados)
@@ -293,7 +292,6 @@ dnf5 install -y \
     containerd.io \
     docker-buildx-plugin \
     docker-compose-plugin
-systemctl enable docker.socket
 dnf5 install -y fish zsh
 dnf5 install -y distrobox flatpak-builder
 dnf5 install -y \
@@ -491,10 +489,7 @@ dnf5 install -y \
 # OBS + Kdenlive RPM + VA-API AMD
 dnf5 install -y obs-studio kdenlive mesa-va-drivers
 
-# WiFi AX210 — perfil global equilibrado, sem powersave no NetworkManager
-cat > /usr/lib/modprobe.d/99-bazzite-cps-wifi.conf << 'MODPROBE'
-options iwlmvm power_scheme=2
-MODPROBE
+# WiFi AX210 — powersave desligado no NetworkManager
 mkdir -p /etc/NetworkManager/conf.d
 cat > /etc/NetworkManager/conf.d/99-bazzite-cps-wifi.conf << 'NMCONF'
 [connection]
