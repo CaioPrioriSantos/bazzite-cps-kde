@@ -193,12 +193,6 @@ cat > /usr/lib/udev/rules.d/99-bazzite-cps-audio-timers.rules << 'UDEV'
 KERNEL=="rtc0", GROUP="audio"
 KERNEL=="hpet", GROUP="audio"
 UDEV
-mkdir -p /etc/security/limits.d
-cat > /etc/security/limits.d/95-audio.conf << 'EOF'
-@audio   -  rtprio   99
-@audio   -  memlock  unlimited
-@audio   -  nice    -19
-EOF
 cat > /usr/lib/udev/rules.d/99-bazzite-cps-audio-pm.rules << 'UDEV'
 ACTION=="add", SUBSYSTEM=="sound", KERNEL=="card*", DRIVERS=="snd_hda_intel", \
   TEST!="/run/udev/snd-hda-intel-powersave", \
