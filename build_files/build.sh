@@ -491,7 +491,7 @@ dnf5 install -y \
 # OBS + Kdenlive RPM + VA-API AMD
 dnf5 install -y obs-studio kdenlive mesa-va-drivers
 
-# WiFi AX210 — power save adaptativo AC/DC
+# WiFi AX210 — perfil global equilibrado, sem powersave no NetworkManager
 cat > /usr/lib/modprobe.d/99-bazzite-cps-wifi.conf << 'MODPROBE'
 options iwlmvm power_scheme=2
 MODPROBE
