@@ -415,12 +415,34 @@ dnf5 install -y \
 dnf5 install -y \
     ardour9 \
     lsp-plugins \
+    lsp-plugins-lv2 \
     calf \
+    lv2-calf-plugins \
+    lv2-calf-plugins-gui \
     zam-plugins \
+    lv2-zam-plugins \
     zynaddsubfx \
+    zynaddsubfx-lv2 \
     yoshimi \
     ladspa-tap-plugins \
-    ladspa-fil-plugins
+    ladspa-fil-plugins \
+    lv2-swh-plugins \
+    lv2-x42-plugins \
+    lv2-mdaEPiano \
+    lv2-mdala-plugins \
+    lv2-ir-plugins \
+    lv2-rubberband-plugins \
+    lv2-setBfree-plugins \
+    lv2-guitarix-plugins \
+    lv2-eq10q \
+    lv2-drumkv1 \
+    lv2-samplv1 \
+    lv2-synthv1 \
+    lv2-padthv1 \
+    lv2-abGate \
+    lv2-amsynth-plugin \
+    lv2-ll-plugins \
+    lv2-vocoder-plugins
 # KWin better blur
 dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
 dnf5 install -y kwin-effects-better-blur-dx
