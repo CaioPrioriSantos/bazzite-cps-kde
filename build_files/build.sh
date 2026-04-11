@@ -442,7 +442,21 @@ dnf5 install -y \
     lv2-abGate \
     lv2-amsynth-plugin \
     lv2-ll-plugins \
-    lv2-vocoder-plugins
+    lv2-vocoder-plugins \
+    lv2-bankstown \
+    lv2-fabla \
+    lv2-qmidiarp \
+    lv2-zynadd-plugins \
+    ladspa-swh-plugins \
+    ladspa-caps-plugins \
+    ladspa-blop-plugins \
+    ladspa-cmt-plugins \
+    ladspa-amb-plugins \
+    ladspa-autotalent-plugins \
+    ladspa-rev-plugins \
+    ladspa-vco-plugins \
+    ladspa-guitarix-plugins \
+    lsp-plugins-ladspa
 # KWin better blur
 dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
 dnf5 install -y kwin-effects-better-blur-dx
