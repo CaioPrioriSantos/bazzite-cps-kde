@@ -495,7 +495,7 @@ SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/iw dev wlan0 set po
 UDEV
 
 cat > /usr/lib/udev/rules.d/99-bazzite-cps-scx-power.rules << 'UDEV'
-SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/bin/scxctl start --sched scx_lavd --mode gaming"
+SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/bin/scxctl start --sched scx_lavd", RUN+="/usr/bin/scxctl switch --sched scx_lavd --mode gaming"
 SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/scxctl stop"
 UDEV
 
