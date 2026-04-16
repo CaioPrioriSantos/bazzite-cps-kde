@@ -515,12 +515,6 @@ NMCONF
 
 
 
-# Warsaw — módulo de segurança bancário (BB, Itaú, Caixa)
-curl -fsSL https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.rpm -o /tmp/warsaw.rpm
-rpm -ivh --nodigest --nosignature --nodeps /tmp/warsaw.rpm
-rm -f /tmp/warsaw.rpm
-systemctl enable warsaw.service
-
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
