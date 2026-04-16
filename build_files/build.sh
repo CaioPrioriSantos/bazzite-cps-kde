@@ -516,7 +516,7 @@ NMCONF
 
 
 # Warsaw — extração manual do .deb, sem dpkg
-WARSAW_DEB="/ctx/build_files/assets/warsaw_current_amd64.deb"
+WARSAW_DEB="/ctx/assets/warsaw_current_amd64.deb"
 if [[ -f "${WARSAW_DEB}" ]]; then
     rm -rf /tmp/warsaw-build
     mkdir -p /tmp/warsaw-build
