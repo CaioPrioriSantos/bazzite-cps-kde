@@ -524,7 +524,11 @@ if [[ -f "${WARSAW_DEB}" ]]; then
     cd /tmp/warsaw-build
     ar x warsaw.deb
     tar -xf data.tar.* --no-same-owner
-    [[ -d usr ]] && cp -a usr/. /usr/
+    if [[ -d usr ]]; then
+        find usr -mindepth 1 -maxdepth 1 -type d | while read d; do
+            cp -a "${d}/." "/usr/$(basename ${d})/"
+        done
+    fi
     [[ -d etc ]] && cp -a etc/. /etc/ || true
     mkdir -p /usr/lib/systemd/system
     cat > /usr/lib/systemd/system/warsaw.service << 'WSVC'
