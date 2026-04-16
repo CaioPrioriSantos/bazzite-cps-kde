@@ -103,6 +103,21 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
     armoury_settings: {},
 )
 RON
+    # asus-nv-temp — GPU temperature target via asus-nb-wmi (bazzite kernel only)
+    tee /usr/lib/systemd/system/asus-nv-temp.service > /dev/null << 'SVC'
+[Unit]
+Description=Set ASUS GPU temperature target
+After=sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/bash -c 'echo 87 > /sys/devices/platform/asus-nb-wmi/nv_temp_target'
+
+[Install]
+WantedBy=multi-user.target
+SVC
+    systemctl enable asus-nv-temp.service
 fi
 # asusd.ron — variante kernel CachyOS (limites confirmados kernel CachyOS-LTO)
 if [[ "${KERNEL_FLAVOR}" == "cachyos" ]]; then
