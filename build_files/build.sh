@@ -44,6 +44,7 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
                 PptPlatformSppt: 100,
                 PptPl1Spl: 150,
                 PptPl2Sppt: 150,
+                PptPl3Fppt: 150,
             },
         ),
         Balanced: (
@@ -53,6 +54,7 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
                 PptPlatformSppt: 80,
                 PptPl1Spl: 100,
                 PptPl2Sppt: 120,
+                PptPl3Fppt: 120,
             },
         ),
         Quiet: (
@@ -62,6 +64,7 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
                 PptPlatformSppt: 40,
                 PptPl1Spl: 45,
                 PptPl2Sppt: 55,
+                PptPl3Fppt: 55,
             },
         ),
     },
@@ -73,6 +76,7 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
                 PptPlatformSppt: 60,
                 PptPl1Spl: 80,
                 PptPl2Sppt: 100,
+                PptPl3Fppt: 100,
             },
         ),
         Balanced: (
@@ -82,6 +86,7 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
                 PptPlatformSppt: 45,
                 PptPl1Spl: 55,
                 PptPl2Sppt: 70,
+                PptPl3Fppt: 70,
             },
         ),
         Quiet: (
@@ -91,6 +96,7 @@ if [[ "${KERNEL_FLAVOR}" == "bazzite" ]]; then
                 PptPlatformSppt: 30,
                 PptPl1Spl: 25,
                 PptPl2Sppt: 35,
+                PptPl3Fppt: 35,
             },
         ),
     },
