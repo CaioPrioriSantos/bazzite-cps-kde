@@ -516,8 +516,9 @@ NMCONF
 
 
 # Warsaw — módulo de segurança bancário (BB, Itaú, Caixa)
-dnf5 install -y --nogpgcheck https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.rpm || \
-    rpm -ivh --nodigest https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.rpm
+curl -fsSL https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.rpm -o /tmp/warsaw.rpm
+rpm -ivh --nodigest --nosignature --nodeps /tmp/warsaw.rpm
+rm -f /tmp/warsaw.rpm
 systemctl enable warsaw.service
 
 dnf5 clean all
