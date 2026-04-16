@@ -515,6 +515,42 @@ NMCONF
 
 
 
+# Warsaw — extração manual do .deb, sem dpkg
+WARSAW_DEB="/ctx/build_files/assets/warsaw_current_amd64.deb"
+if [[ -f "${WARSAW_DEB}" ]]; then
+    rm -rf /tmp/warsaw-build
+    mkdir -p /tmp/warsaw-build
+    cp -f "${WARSAW_DEB}" /tmp/warsaw-build/warsaw.deb
+    cd /tmp/warsaw-build
+    ar x warsaw.deb
+    tar -xf data.tar.* --no-same-owner
+    [[ -d usr ]] && cp -a usr/. /usr/
+    [[ -d etc ]] && cp -a etc/. /etc/ || true
+    mkdir -p /usr/lib/systemd/system
+    cat > /usr/lib/systemd/system/warsaw.service << 'WSVC'
+[Unit]
+Description=Warsaw Desktop
+After=network.target graphical.target
+Wants=network.target
+
+[Service]
+Type=forking
+PIDFile=/run/core.pid
+ExecStart=-/usr/local/bin/warsaw/core
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target
+WSVC
+    systemctl enable warsaw.service
+    cd /
+    rm -rf /tmp/warsaw-build
+    echo "Warsaw instalado via extração de payload"
+else
+    echo "Warsaw .deb não encontrado — imagem segue sem ele"
+fi
+
 dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
