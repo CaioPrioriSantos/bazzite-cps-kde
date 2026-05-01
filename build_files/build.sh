@@ -519,3 +519,33 @@ dnf5 clean all
 if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
   sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
 fi
+
+# ------------------------------------------------------------------------------
+# Virtualização — QEMU/KVM + libvirt + virt-manager
+# ------------------------------------------------------------------------------
+dnf5 install -y \
+    qemu \
+    qemu-kvm \
+    qemu-img \
+    libvirt \
+    virt-install \
+    virt-manager \
+    virt-viewer \
+    edk2-ovmf \
+    swtpm \
+    swtpm-tools \
+    guestfs-tools \
+    libguestfs-tools \
+    virtio-win \
+    dnsmasq \
+    bridge-utils \
+    iptables-nft
+
+systemctl enable virtqemud.socket
+systemctl enable virtlogd.socket
+systemctl enable virtlockd.socket
+systemctl enable virtnetworkd.socket
+systemctl enable virtstoraged.socket
+
+# Mantém também o socket clássico, caso alguma ferramenta ainda chame libvirtd.
+systemctl enable libvirtd.socket || true
