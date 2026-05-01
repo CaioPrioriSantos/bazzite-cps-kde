@@ -476,7 +476,6 @@ dnf5 install -y \
     ladspa-autotalent-plugins \
     ladspa-rev-plugins \
     ladspa-vco-plugins \
-    ladspa-guitarix-plugins \
     lsp-plugins-ladspa
 # KWin better blur
 dnf5 copr enable -y infinality/kwin-effects-better-blur-dx
