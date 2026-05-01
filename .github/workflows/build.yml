@@ -85,6 +85,10 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@v3
 
+      - name: Login cosign to GHCR
+        if: github.event_name != 'pull_request'
+        run: cosign login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
+
       - name: Sign image
         if: github.event_name != 'pull_request'
         run: |
