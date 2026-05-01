@@ -531,7 +531,6 @@ dnf5 install -y \
     swtpm-tools \
     guestfs-tools \
     libguestfs-tools \
-    virtio-win \
     dnsmasq \
     bridge-utils \
     iptables-nft
