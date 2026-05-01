@@ -515,11 +515,6 @@ NMCONF
 
 
 
-dnf5 clean all
-if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
-  sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
-fi
-
 
 # ------------------------------------------------------------------------------
 # Virtualização — QEMU/KVM + libvirt + virt-manager
@@ -545,3 +540,9 @@ dnf5 install -y \
 # Serviços libvirt ficam instalados, mas NÃO são ativados por padrão.
 # Para usar VMs, iniciar manualmente no sistema:
 # sudo systemctl start virtqemud.socket virtlogd.socket virtlockd.socket virtnetworkd.socket virtstoraged.socket
+
+
+dnf5 clean all
+if [ -f /usr/lib/sysctl.d/75-networking.conf ]; then
+  sed -i 's/^net\.ipv4\.tcp_congestion_control=bbr$/net.ipv4.tcp_congestion_control=cubic/' /usr/lib/sysctl.d/75-networking.conf || true
+fi
